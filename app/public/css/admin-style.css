@@ -1,0 +1,216 @@
+/*Características generales*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    overflow: hidden;
+    font-family: "Cabin", sans-serif;
+    font-size: 16px;
+    background-color: #FFFFFF;
+    color: #000000;
+}
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    background-color: #200D02;
+    color: #FFFFFF;
+}
+.sidebar .nav-link {
+    color: #FFFFFF;
+    transition: 0.3s;
+}
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background-color: #854507;
+}
+.content {
+    height: 100vh;
+    overflow-y: auto;
+}
+
+h1 {
+    font-size: 40px;
+}
+h2 {
+    font-size: 28px;
+}
+h3 {
+    font-size: 18px;
+    font-family: "Alfa Slab One", serif;
+}
+h1, h2 {
+    font-family: "Playfair Display", serif;
+}
+
+/*Caracteristicas del header*/
+/*Caracteristicas del home*/
+/*Caracteristicas de las promociones*/
+.promociones,
+.eventos,
+.menu,
+.reservaciones {
+    display: flex;
+    flex-direction: column;
+    gap: 48px;
+    margin: 48px auto;
+    padding: 48px;
+    max-width: 1200px;
+    width: 100%;
+    background-color: #854507;
+    border-radius: 16px;
+    color: white;
+}
+.vista-promos, .promo-nueva,
+.vista-eventos, .evento-nuevo,
+.vista-productos, .producto-nuevo,
+.vista-reservas, .vista-mesas {
+    scroll-margin-top: 74px;
+    padding: 16px;
+    background-color: white;
+    border-radius: 16px;
+    color: #200D02;
+}
+form label {
+    margin-bottom: 16px;
+}
+form .form-control,
+form .form-select {
+    border-radius: 16px;
+    border-color: #200D02;
+    color: #200D02;
+    padding: 8px 12px;
+    width: 100%;
+}
+form .input-group {
+    border-radius: 16px;
+    border-color: #200D02;
+}
+/*Caracteristicas de las tablas*/
+.table {
+    border-color: #200D02;
+}
+.table thead th {
+    font-weight: 100;
+    color: #200D02;
+}
+.table tbody td {
+    font-weight: 300;
+    color: #200D02;
+}
+table {
+    font-weight: 900;
+}
+
+/*Caracteristicas de botones*/
+.btn {
+    border-radius: 16px;
+    padding: 16px;
+}
+#btn-create-promociones,
+#btn-create-eventos,
+#btn-create-menu,
+#btn-create-mesas {
+    background-color: #11422A;
+    color: white;
+}
+#btn-delete-promociones,
+#btn-delete-eventos,
+#btn-delete-menu,
+#btn-delete-mesas,
+#btn-cancel-promociones,
+#btn-cancel-eventos,
+#btn-cancel-menu {
+    background-color: #9A4530;
+    color: white;
+}
+#btn-update-promociones,
+#btn-update-eventos,
+#btn-update-menu,
+#btn-update-mesas {
+    background-color: #200D02;
+    color: white;
+}
+#btn-guardar-promociones,
+#btn-guardar-eventos,
+#btn-guardar-menu{
+    background-color: #854507;
+    color: white;
+}
+
+/*Caracteristicas de las ventanas flotantes*/
+.modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+.modal-overlay.activo {
+    display: flex;
+}
+.modal-content {
+    background-color: #200D02;
+    color: white;
+    padding: 16px;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 800px;
+}
+.delete-box {
+    width: 320px;
+    padding: 16px;
+    background-color: #fff;
+    border: 2px solid #200D02;
+    border-radius: 16px;
+    color: #200D02;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+.delete-box .d-flex {
+    justify-content: center;
+}
+
+/*Caracteristicas al ser responsiva*/
+/*Tablet*/
+@media (max-width: 992px) {
+    h1 {
+        font-size: 32px;
+    }
+    h2 {
+        font-size: 24px;
+    }
+}
+/*Celular*/
+@media (max-width: 768px) {
+    h1 {
+        font-size: 24px;
+    }
+    h2 {
+        font-size: 20px;
+    }
+    h3 {
+        font-size: 16px;
+    }
+    p {
+        font-size: 14px;
+    }
+    .promociones,
+    .eventos,
+    .menu,
+    .reservaciones {
+        padding: 32px 16px;
+    }
+    .table-responsive {
+        overflow-x: auto;
+    }
+    .custom-table th h3,
+    .custom-table td {
+        font-size: 14px;
+        white-space: nowrap;
+    }
+}
+/*Celular pequeño*/
+@media (max-width: 480px) {
+}

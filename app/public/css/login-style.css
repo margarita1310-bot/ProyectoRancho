@@ -1,0 +1,87 @@
+/*Estilos generales*/
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+html body {
+    width: 100%;
+    height: 100%;
+    font-family: "Cabin", sans-serif;
+    font-size: 16px;
+    background-color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+h1 {
+    font-size: 40px;
+}
+h2 {
+    font-size: 28px;
+}
+h3 {
+    font-size: 18px;
+    font-family: "Alfa Slab One", serif;
+}
+h1, h2 {
+    font-family: "Playfair Display", serif;
+}
+/*Estilo de elementos*/
+.login {
+    display: flex;
+    flex-wrap: wrap;
+    background-color: black;
+    color: white;
+    border-radius: 16px;
+    overflow: hidden;
+    margin: 48px 132px;
+    width: calc(100% - 264px);
+    height: calc(100vh - 96px);
+    max-width: 1200px;
+}
+.side-left {
+    flex: 1;
+    min-width: 300px;
+    overflow: hidden;
+}
+.side-left img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.side-right {
+    flex: 0 0 50%;
+    min-width: 300px;
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: black;
+}
+/*Estilos formulario*/
+form label {
+    margin-bottom: 8px;
+}
+form .form-control {
+    border-radius: 16px;
+    padding: 8px 12px;
+    width: 100%;
+    margin-bottom: 16px;
+}
+.login-form input.form-control,
+.login-form button {
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+    margin-bottom: 8px;
+}
+/*Estilo boton*/
+button {
+    border-radius: 16px;
+    padding: 16px;
+    background-color: #854507;
+    color: white;
+    width: 100%;
+}
