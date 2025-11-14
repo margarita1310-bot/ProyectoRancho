@@ -11,7 +11,7 @@
     <!--Link bootstrap ICONOS-->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.min.css">
     <!--Link Estilos-->
-    <link rel="stylesheet" href="/vista/admin-style.css">
+    <link rel="stylesheet" href="/app/views/admin/admin-style.css">
 </head>
 <body>
     <!--Side bar-->
@@ -61,7 +61,7 @@
                     <li><a class="dropdown-item" href="#">Configuración</a></li>
                     <li><a class="dropdown-item" href="#">Perfil</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">Cerrar sesión</a></li>
+                    <li><a class="dropdown-item" href="../../app/controllers/AdminController.php?action=logout">Cerrar sesión</a></li>
                 </ul>
             </div>
         </div>
@@ -418,6 +418,7 @@
         </div>
     </section>
     <!--Modal de confirmacion de eliminacion-->
+    <!--
     <section id="delete-overlay" class="delete-overlay">
         <div class="delete-box">
             <h2 id="delete-title">Eliminar elemento</h2>
@@ -428,9 +429,10 @@
             </div>
         </div>
     </section>
+-->
     <!--Link Boostrap JS-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
     <!--Script JS-->
-    <script src="/controlador/app.js"></script>
+    <script src="/app/views/admin/admin-js.js"></script>
 </body>
 </html>
