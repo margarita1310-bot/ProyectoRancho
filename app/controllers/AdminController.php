@@ -34,7 +34,7 @@ class AdminController {
         $producto = $productoModel->getAll();
 
 
-        include '../../app/views/admin/dashboard.php';
+        include '../../app/views/admin/DashboardAdmin.php';
     }
 
      /*

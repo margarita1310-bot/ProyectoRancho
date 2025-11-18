@@ -38,7 +38,7 @@ class PromocionController {
 	public function index() {
 		$prom = new PromocionModel();
 		$promocion = $prom->getAll();
-		require_once __DIR__ . '/../../app/views/admin/PromocionView.php';
+		require_once __DIR__ . '/../../app/views/admin/PromocionAdmin.php';
 	}
 
 	 /*

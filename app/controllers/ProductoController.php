@@ -31,7 +31,7 @@ class ProductoController {
     public function index() {
         $producto = new ProductoModel();
         $producto = $producto->getAll();
-        require_once __DIR__ . '/../../app/views/admin/ProductoView.php';
+        require_once __DIR__ . '/../../app/views/admin/ProductoAdmin.php';
     }
 
      /*

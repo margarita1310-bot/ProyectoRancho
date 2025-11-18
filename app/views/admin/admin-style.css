@@ -128,6 +128,13 @@ form .input-group {
 #btn-crear-mesa {
     background-color: #11422A;
 }
+#btn-crear-promocion:hover,
+#btn-crear-evento:hover,
+#btn-crear-producto:hover,
+#btn-crear-mesa:hover {
+    background-color: #0e331f;
+    color: #FFFFFF;
+}
 #btn-guardar-promocion,
 #btn-editar-promocion,
 #btn-guardar-evento,
@@ -154,8 +161,15 @@ form .input-group {
     background-color: #E2B80E;
     color: #000000;
 }
+.btn-editar:hover {
+    border-color: #E2B80E;
+    color: #000000;
+}
 .btn-eliminar {
     background-color: #9A4530;
+}
+.btn-eliminar:hover {
+    border-color: #9A4530;
 }
 /*Estilo de las ventanas flotantes*/
 .modal-overlay,

@@ -1,6 +1,6 @@
 <?php
-/**
- * ReservasController.php
+ /*
+ * ReservaController.php
  * 
  * Controlador para gestión de reservas.
  * Permite listar, filtrar por fecha, confirmar (con asignación opcional de mesa) y declinar reservas.

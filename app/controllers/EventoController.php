@@ -38,7 +38,7 @@ class EventoController {
 	public function index() {
 		$ev = new EventoModel();
 		$evento = $ev->getAll();
-		require_once __DIR__ . '/../../app/views/admin/EventoView.php';
+		require_once __DIR__ . '/../../app/views/admin/EventoAdmin.php';
 	}
 
 	/**

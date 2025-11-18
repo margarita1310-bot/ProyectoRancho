@@ -16,18 +16,18 @@
 <body>
     <div class="d-flex">
         <!--Side bar-->
-        <?php include 'sidebar.php'; ?>
+        <?php include 'SidebarAdmin.php'; ?>
         
         <!--Contenido de la pagina-->
         <div class="content flex-grow-1 p-3">
             <!--Inicio-->
-            <?php include 'inicio.php'; ?>
+            <?php include 'IndexAdmin.php'; ?>
             <!--Promociones-->
-            <?php include 'PromocionView.php'; ?>
+            <?php include 'PromocionAdmin.php'; ?>
             <!--Eventos-->
-            <?php include 'EventoView.php'; ?>
+            <?php include 'EventoAdmin.php'; ?>
             <!--Menu-->
-            <?php include 'ProductoView.php'; ?>
+            <?php include 'ProductoAdmin.php'; ?>
             <!--Reservas-->
             <?php include 'reservas.php'; ?>
             <!--Mesas-->
@@ -49,11 +49,11 @@
     <!--Script JS divididos por responsabilidad-->
     <script src="/app/views/admin/js/utils.js"></script>
     <script src="/app/views/admin/js/nav.js"></script>
-    <script src="/app/views/admin/js/BtnEliminarJs.js"></script>
-    <script src="/app/views/admin/js/BtnEditarJs.js"></script>
-    <script src="/app/views/admin/js/ProductoJs.js"></script>
-    <script src="/app/views/admin/js/PromocionJs.js"></script>
-    <script src="/app/views/admin/js/EventoJs.js"></script>
+    <script src="/app/views/admin/js/EliminarAdminJS.js"></script>
+    <script src="/app/views/admin/js/EditarAdminJS.js"></script>
+    <script src="/app/views/admin/js/ProductoAdminJS.js"></script>
+    <script src="/app/views/admin/js/PromocionAdminJS.js"></script>
+    <script src="/app/views/admin/js/EventoAdminJS.js"></script>
     <script src="/app/views/admin/js/mesas.js"></script>
 </body>
 </html>
