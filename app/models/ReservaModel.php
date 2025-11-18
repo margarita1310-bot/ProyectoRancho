@@ -1,13 +1,13 @@
 <?php
-/**
- * Reserva.php
+ /*
+ * ReservaModel.php
  * 
  * Modelo para gestionar reservas de clientes.
  * Obtiene, filtra por fecha, confirma (con asignación opcional de mesa) y elimina reservas.
  * 
- * Tabla: reserva (id_reserva, id_cliente, id_evento, fecha, hora, num_personas, folio, estado, codigo_conf, fecha_creacion, mesa)
+ * Tabla: reserva (id_reserva, id_cliente, id_evento, id_mesa, fecha, hora, num_personas, estado, fecha_creacion, folio)
  * 
- * Estados de reserva: 'pendiente', 'confirmada'
+ * Estados de reserva: 'pendiente', 'confirmada', 'cancelada'.
  * 
  * Métodos:
  * - getAll(): Retorna todas las reservas
@@ -20,12 +20,10 @@
 
 require_once 'Conexion.php';
 
-class Reserva {
-    /**
+class ReservaModel {
+     /*
      * getAll()
-     * 
      * Retorna todas las reservas ordenadas DESC por ID.
-     * 
      * @return array - Array de reservas
      */
     public function getAll() {
@@ -34,11 +32,9 @@ class Reserva {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
+     /*
      * getPending()
-     * 
      * Retorna solo las reservas con estado='pendiente'.
-     * 
      * @return array - Array de reservas pendientes ordenadas por fecha y hora
      */
     public function getPending() {
@@ -48,12 +44,9 @@ class Reserva {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
+     /*
      * getByDate($fecha)
-     * 
      * Filtra reservas de una fecha específica.
-     * 
-     * @param string $fecha - Fecha en formato YYYY-MM-DD
      * @return array - Array de reservas de esa fecha ordenadas por hora
      */
     public function getByDate($fecha) {
@@ -63,12 +56,9 @@ class Reserva {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    /**
+     /*
      * getById($id)
-     * 
      * Obtiene una reserva por ID.
-     * 
-     * @param int $id - ID de la reserva
      * @return array|false - Datos de la reserva o false
      */
     public function getById($id) {
@@ -78,18 +68,10 @@ class Reserva {
         return $stmt->fetch(PDO::FETCH_ASSOC);
     }
 
-    /**
+     /*
      * confirm($id[, $mesa])
-     * 
      * Marca una reserva como confirmada.
      * Si se proporciona mesa (2do parámetro variádico), también asigna el número de mesa.
-     * 
-     * Flujo:
-     * - Sin mesa: UPDATE ... SET estado='confirmada' WHERE id_reserva=?
-     * - Con mesa: UPDATE ... SET estado='confirmada', mesa=? WHERE id_reserva=?
-     * 
-     * @param int $id - ID de la reserva
-     * @param int|null $mesa - (Opcional) Número de mesa a asignar
      * @return bool - true si se confirmó, false si hubo error
      */
     public function confirm($id) {
@@ -104,7 +86,7 @@ class Reserva {
         return $stmt->execute([$id]);
     }
 
-    /**
+     /*
      * delete($id)
      * 
      * Elimina una reserva.
@@ -118,5 +100,4 @@ class Reserva {
         return $stmt->execute([$id]);
     }
 }
-
 ?>

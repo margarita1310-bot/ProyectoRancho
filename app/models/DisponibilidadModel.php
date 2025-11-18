@@ -1,6 +1,6 @@
 <?php
 /**
- * MesaDisponibilidad.php
+ * Disponibilidad.php
  * 
  * Modelo para gestionar disponibilidad de mesas por fecha.
  * Permite crear, actualizar y consultar registros de mesas disponibles.
@@ -16,7 +16,7 @@
 
 require_once 'Conexion.php';
 
-class MesaDisponibilidad {
+class DisponibilidadModel {
     /**
      * getByDate($fecha)
      * 

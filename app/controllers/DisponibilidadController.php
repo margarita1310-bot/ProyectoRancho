@@ -1,6 +1,6 @@
 <?php
-/**
- * MesasController.php
+ /*
+ * DisponibilidadController.php
  * 
  * Controlador para gestión de disponibilidad de mesas por fecha.
  * Permite crear, consultar, actualizar y eliminar registros de disponibilidad.
@@ -16,13 +16,13 @@
  * Requiere: Autenticación de administrador (ensureAdmin())
  */
 
-require_once __DIR__ . '/../models/MesaDisponibilidad.php';
+require_once __DIR__ . '/../models/DisponibilidadModel.php';
 require_once __DIR__ . '/Auth.php';
 
 ensureAdmin();
 
-class MesasController {
-    /**
+class DisponibilidadController {
+     /*
      * listar()
      * 
      * Retorna disponibilidad de mesas para una fecha específica.
@@ -40,12 +40,12 @@ class MesasController {
         header('Content-Type: application/json; charset=utf-8');
         $fecha = $_GET['fecha'] ?? null;
         if (!$fecha) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'missing_fecha']); return; }
-        $m = new MesaDisponibilidad();
+        $m = new DisponibilidadModel();
         $res = $m->getByDate($fecha);
         echo json_encode($res ?: ['fecha'=>$fecha,'cantidad'=>0]);
     }
 
-    /**
+     /*
      * guardar()
      * 
      * Crea disponibilidad para una fecha o actualiza si ya existe (UPSERT).
@@ -66,12 +66,12 @@ class MesasController {
         $fecha = $_POST['fecha'] ?? null;
         $cantidad = $_POST['cantidad'] ?? null;
         if (!$fecha || !$cantidad || !ctype_digit(strval($cantidad))) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'invalid_input']); return; }
-        $m = new MesaDisponibilidad();
+        $m = new DisponibilidadModel();
         $ok = $m->create($fecha, intval($cantidad));
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'db_error']);
     }
 
-    /**
+     /*
      * actualizar()
      * 
      * Actualiza la cantidad de mesas disponibles para un registro.
@@ -92,12 +92,12 @@ class MesasController {
         $id = $_POST['id'] ?? null;
         $cantidad = $_POST['cantidad'] ?? null;
         if (!$id || !ctype_digit(strval($id)) || !$cantidad || !ctype_digit(strval($cantidad))) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'invalid_input']); return; }
-        $m = new MesaDisponibilidad();
+        $m = new DisponibilidadModel();
         $ok = $m->update(intval($id), intval($cantidad));
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'db_error']);
     }
 
-    /**
+     /*
      * eliminar()
      * 
      * Elimina un registro de disponibilidad de mesas.
@@ -116,13 +116,13 @@ class MesasController {
         header('Content-Type: application/json; charset=utf-8');
         $id = $_POST['id'] ?? null;
         if (!$id || !ctype_digit(strval($id))) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'invalid_input']); return; }
-        $m = new MesaDisponibilidad();
+        $m = new DisponibilidadModel();
         $ok = $m->delete(intval($id));
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'db_error']);
     }
 }
 
-$controller = new MesasController();
+$controller = new DisponibilidadController();
 $action = $_GET['action'] ?? null;
 if (!$action) {
     $isAjax = false;

@@ -27,12 +27,12 @@
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link" onclick="mostrarContenido('reservas')">
+            <a href="#" class="nav-link" onclick="mostrarContenido('reserva')">
                 <i class="bi bi-journal-check me-2"></i> Reservas
             </a>
         </li>
         <li class="nav-item">
-            <a href="#" class="nav-link" onclick="mostrarContenido('mesas')">
+            <a href="#" class="nav-link" onclick="mostrarContenido('mesa')">
                 <i class="bi bi-grid-3x3 me-2"></i> Mesas
             </a>
         </li>

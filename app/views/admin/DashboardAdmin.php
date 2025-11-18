@@ -29,9 +29,9 @@
             <!--Menu-->
             <?php include 'ProductoAdmin.php'; ?>
             <!--Reservas-->
-            <?php include 'reservas.php'; ?>
+            <?php include 'ReservaAdmin.php'; ?>
             <!--Mesas-->
-            <?php include 'mesas.php'; ?>
+            <?php include 'DisponibilidadAdmin.php'; ?>
             <!-- Modales -->
             <?php include 'modals/crear-producto.php'; ?>
             <?php include 'modals/editar-producto.php'; ?>
