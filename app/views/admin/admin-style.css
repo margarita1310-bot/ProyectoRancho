@@ -1,4 +1,4 @@
-/*Características generales*/
+/*Estilos generales*/
 * {
     margin: 0;
     padding: 0;
@@ -11,24 +11,6 @@ body {
     background-color: #FFFFFF;
     color: #000000;
 }
-.sidebar {
-    height: 100vh;
-    width: 250px;
-    background-color: #200D02;
-    color: #FFFFFF;
-}
-.sidebar .nav-link {
-    color: #FFFFFF;
-    transition: 0.3s;
-}
-.sidebar .nav-link:hover, .sidebar .nav-link.active {
-    background-color: #854507;
-}
-.content {
-    height: 100vh;
-    overflow-y: auto;
-}
-
 h1 {
     font-size: 40px;
 }
@@ -42,34 +24,64 @@ h3 {
 h1, h2 {
     font-family: "Playfair Display", serif;
 }
-
-/*Caracteristicas del header*/
-/*Caracteristicas del home*/
-/*Caracteristicas de las promociones*/
-.promociones,
-.eventos,
-.menu,
-.reservaciones {
-    display: flex;
-    flex-direction: column;
-    gap: 48px;
-    margin: 48px auto;
-    padding: 48px;
-    max-width: 1200px;
-    width: 100%;
-    background-color: #854507;
-    border-radius: 16px;
-    color: white;
+/*Estilos side-bar*/
+.sidebar {
+    height: 100vh;
+    width: 250px;
+    background-color: #200D02;
+    color: #FFFFFF;
 }
-.vista-promos, .promo-nueva,
-.vista-eventos, .evento-nuevo,
-.vista-productos, .producto-nuevo,
-.vista-reservas, .vista-mesas {
-    scroll-margin-top: 74px;
-    padding: 16px;
-    background-color: white;
+.sidebar .nav-link {
+    color: #FFFFFF;
+    transition: 0.3s;
+}
+.sidebar strong {
+    color: #FFFFFF;
+    font-family: 'Playfair Display', serif;
+}
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    background-color: #854507;
+}
+#btn-menu {
+    display: none;
+}
+/*Estilo del contenido en general*/
+.content {
+    height: 100vh;
+    overflow-y: auto;
+}
+.card-resumen {
+    background-color: #854507;
+    color: #FFFFFF;
     border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+.card-resumen h3 {
+    font-size: 32px;
+    font-weight: 700;
+}
+.card-resumen p {
+    opacity: 0.9;
+}
+.card-lista {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid #200D02;
+}
+.card-lista .card-header {
+    background-color: #200D02;
+    color: #FFFFFF;
+    font-weight: bold;
+}
+.list-group-item {
+    font-size: 15px;
     color: #200D02;
+}
+.alert {
+    border-radius: 16px;
+    font-size: 15px;
 }
 form label {
     margin-bottom: 16px;
@@ -86,60 +98,68 @@ form .input-group {
     border-radius: 16px;
     border-color: #200D02;
 }
-/*Caracteristicas de las tablas*/
+/*Estilo de las tablas*/
 .table {
-    border-color: #200D02;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid #200D02;
 }
 .table thead th {
-    font-weight: 100;
-    color: #200D02;
+    background-color: #200D02;
+    font-family: 'Playfair Display', serif;
+    font-weight: 600;
+    color: #FFFFFF;
 }
 .table tbody td {
     font-weight: 300;
     color: #200D02;
 }
-table {
-    font-weight: 900;
-}
 
-/*Caracteristicas de botones*/
+/*Estilo de botones*/
 .btn {
-    border-radius: 16px;
-    padding: 16px;
+    border-radius: 8px;
+    padding: 6px 10px;
+    font-size: 14px;
+    color: #FFFFFF;
 }
-#btn-create-promociones,
-#btn-create-eventos,
-#btn-create-menu,
-#btn-create-mesas {
+#btn-crear-promocion,
+#btn-crear-evento,
+#btn-crear-producto,
+#btn-crear-mesa {
     background-color: #11422A;
-    color: white;
 }
-#btn-delete-promociones,
-#btn-delete-eventos,
-#btn-delete-menu,
-#btn-delete-mesas,
-#btn-cancel-promociones,
-#btn-cancel-eventos,
-#btn-cancel-menu {
-    background-color: #9A4530;
-    color: white;
-}
-#btn-update-promociones,
-#btn-update-eventos,
-#btn-update-menu,
-#btn-update-mesas {
-    background-color: #200D02;
-    color: white;
-}
-#btn-guardar-promociones,
-#btn-guardar-eventos,
-#btn-guardar-menu{
+#btn-guardar-promocion,
+#btn-editar-promocion,
+#btn-guardar-evento,
+#btn-editar-evento,
+#btn-guardar-producto,
+#btn-editar-producto,
+#btn-guardar-mesas {
     background-color: #854507;
-    color: white;
 }
-
-/*Caracteristicas de las ventanas flotantes*/
-.modal-overlay {
+#btn-cancelar-promocion,
+#btn-cancelar-editar-promocion,
+#btn-cancelar-evento,
+#btn-cancelar-editar-evento,
+#btn-cancelar-producto,
+#btn-cancelar-editar-producto,
+#btn-cancelar-mesas,
+#btn-confirmar-eliminar {
+    background-color: #9A4530;
+}
+#btn-cancelar-eliminar {
+    background-color: #200D02;
+}
+.btn-editar {
+    background-color: #E2B80E;
+    color: #000000;
+}
+.btn-eliminar {
+    background-color: #9A4530;
+}
+/*Estilo de las ventanas flotantes*/
+.modal-overlay,
+.delete-overlay {
     display: none;
     position: fixed;
     inset: 0;
@@ -147,31 +167,56 @@ table {
     justify-content: center;
     align-items: center;
 }
-.modal-overlay.activo {
+.modal-overlay.activo,
+.modal-overlay.active,
+.delete-overlay.active,
+.delete-overlay.activo {
     display: flex;
 }
 .modal-content {
     background-color: #200D02;
-    color: white;
+    color: #FFFFFF;
     padding: 16px;
     border-radius: 16px;
     width: 90%;
     max-width: 800px;
 }
-.delete-box {
+.eliminar-box {
     width: 320px;
     padding: 16px;
-    background-color: #fff;
+    background-color: #FFFFFF;
     border: 2px solid #200D02;
     border-radius: 16px;
     color: #200D02;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
-.delete-box .d-flex {
+.eliminar-box .d-flex {
     justify-content: center;
 }
 
+/*Caracteristicas al ser responsiva*/
+/*Tablet*/
+@media (max-width: 992px) {
+}
+
+/* variantes visuales para el modal de confirmación */
+/*
+.eliminar-box.danger {
+    border-color: #9A2F2F;
+}
+.eliminar-box.danger h2,
+.eliminar-box.danger p {
+    color: #9A2F2F;
+}
+.eliminar-box.warn {
+    border-color: #E09B2D;
+}
+.eliminar-box.warn h2,
+.eliminar-box.warn p {
+    color: #E09B2D;
+}
+    */
 /*Caracteristicas al ser responsiva*/
 /*Tablet*/
 @media (max-width: 992px) {
@@ -180,6 +225,12 @@ table {
     }
     h2 {
         font-size: 24px;
+    }
+    .sidebar {
+        width: 220px;
+    }
+    .content {
+        margin-left: 220px;
     }
 }
 /*Celular*/
@@ -196,11 +247,46 @@ table {
     p {
         font-size: 14px;
     }
-    .promociones,
-    .eventos,
-    .menu,
-    .reservaciones {
-        padding: 32px 16px;
+    #btn-menu {
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        background-color: #854507;
+        color: #FFFFFF;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 16px;
+        z-index: 10000;
+        cursor: pointer;
+        display: block;
+    }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 250px !important;
+        height: 100vh;
+        background-color: #200D02;
+        transform: translateX(-260px);
+        transition: transform 0.3s ease-in-out;
+        z-index: 9999;
+    }
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    .sidebar.active ~ #btn-menu,
+    body.sidebar-open #btn-menu {
+        display: none !important;
+    }
+    .content {
+        margin-left: 0 !important;
+    }
+    .title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+        margin-left: 56px;
     }
     .table-responsive {
         overflow-x: auto;
@@ -210,7 +296,4 @@ table {
         font-size: 14px;
         white-space: nowrap;
     }
-}
-/*Celular pequeño*/
-@media (max-width: 480px) {
 }

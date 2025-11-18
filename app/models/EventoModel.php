@@ -1,0 +1,117 @@
+<?php
+ /*
+ * Evento.php
+ * 
+ * Modelo para gestionar eventos con soporte opcional para imágenes.
+ * Maneja CRUD: create, read, update, delete.
+ * 
+ * Tabla: evento (id_evento, nombre, descripcion, fecha, hora_inicio, hora_fin, imagen)
+ * 
+ * Métodos:
+ * - getAll(): Retorna todos los eventos
+ * - create(..., $imagen): Crea nuevo evento (imagen es parámetro variádico OPCIONAL)
+ * - getById($id): Obtiene un evento por ID
+ * - update(..., $imagen): Actualiza evento (imagen opcional)
+ * - delete($id): Elimina un evento
+ */
+
+require_once 'Conexion.php';
+
+class EventoModel {
+
+     /*
+     * getAll()
+     * Retorna todos los eventos ordenados DESC por ID.
+     * @return array - Array de eventos
+     */
+    public function getAll() {
+        $db = Conexion::conectar();
+        $query = $db->query("SELECT * FROM evento ORDER BY id_evento DESC");
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+     /*
+     * create($nombre, $descripcion, $fecha, $hora_inicio, $hora_fin[, $imagen])
+     * 
+     * Crea nuevo evento. La imagen es parámetro variádico (6to parámetro opcional).
+     * 
+     * @param string $nombre - Nombre del evento
+     * @param string $descripcion - Descripción
+     * @param string $fecha - Fecha (YYYY-MM-DD)
+     * @param string $hora_inicio - Hora inicio (HH:MM)
+     * @param string $hora_fin - Hora fin (HH:MM)
+     * @param string|null $imagen - (Opcional) Nombre del archivo de imagen
+     * @return bool - true si se insertó, false si hubo error
+     */
+    public function create($nombre, $descripcion, $fecha, $hora_inicio, $hora_fin) {
+        $db = Conexion::conectar();
+        $args = [$nombre, $descripcion, $fecha, $hora_inicio, $hora_fin];
+        if (func_num_args() >= 6) {
+            $imagen = func_get_arg(5);
+            $sql = "INSERT INTO evento (nombre, descripcion, fecha, hora_inicio, hora_fin, imagen) VALUES (?, ?, ?, ?, ?, ?)";
+            $stmt = $db->prepare($sql);
+            $args[] = $imagen;
+        } else {
+            $sql = "INSERT INTO evento (nombre, descripcion, fecha, hora_inicio, hora_fin) VALUES (?, ?, ?, ?, ?)";
+            $stmt = $db->prepare($sql);
+        }
+        return $stmt->execute($args);
+    }
+
+     /*
+     * getById($id)
+     * Obtiene un evento por ID.
+     * @param int $id - ID del evento
+     * @return array|false - Datos del evento o false
+     */
+    public function getById($id) {
+        $db = Conexion::conectar();
+        $sql = "SELECT * FROM evento WHERE id_evento = ?";
+        $stmt = $db->prepare($sql);
+        $stmt->execute([$id]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+     /*
+     * update($id, $nombre, $descripcion, $fecha, $hora_inicio, $hora_fin[, $imagen])
+     * 
+     * Actualiza un evento. La imagen es parámetro variádico (7mo parámetro opcional).
+     * 
+     * @param int $id - ID del evento
+     * @param string $nombre - Nuevo nombre
+     * @param string $descripcion - Nueva descripción
+     * @param string $fecha - Nueva fecha
+     * @param string $hora_inicio - Nueva hora inicio
+     * @param string $hora_fin - Nueva hora fin
+     * @param string|null $imagen - (Opcional) Nuevo nombre de imagen
+     * @return bool - true si se actualizó, false si hubo error
+     */
+    public function update($id, $nombre, $descripcion, $fecha, $hora_inicio, $hora_fin) {
+        $db = Conexion::conectar();
+        if (func_num_args() >= 7) {
+            $imagen = func_get_arg(6);
+            if ($imagen) {
+                $sql = "UPDATE evento SET nombre=?, descripcion=?, fecha=?, hora_inicio=?, hora_fin=?, imagen=? WHERE id_evento=?";
+                $stmt = $db->prepare($sql);
+                return $stmt->execute([$nombre, $descripcion, $fecha, $hora_inicio, $hora_fin, $imagen, $id]);
+            }
+        }
+        $sql = "UPDATE evento SET nombre=?, descripcion=?, fecha=?, hora_inicio=?, hora_fin=? WHERE id_evento=?";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([$nombre, $descripcion, $fecha, $hora_inicio, $hora_fin, $id]);
+    }
+
+     /*
+     * delete($id)
+     * Elimina un evento.
+     * @param int $id - ID del evento
+     * @return bool - true si se eliminó, false si hubo error
+     */
+    public function delete($id) {
+        $db = Conexion::conectar();
+        $sql = "DELETE FROM evento WHERE id_evento=?";
+        $stmt = $db->prepare($sql);
+        return $stmt->execute([$id]);
+    }
+}
+?>

@@ -85,3 +85,45 @@ button {
     color: white;
     width: 100%;
 }
+@media (max-width: 992px) {
+    .login {
+        height: auto;
+        flex-direction: column;
+    }
+
+    .side-left {
+        height: 300px;
+    }
+
+    .side-right {
+        padding: 32px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 32px;
+    }
+}
+@media (max-width: 576px) {
+    .login {
+        width: 100%;
+        border-radius: 0;
+        height: auto;
+    }
+
+    .side-left {
+        height: 200px;
+    }
+
+    .side-right {
+        padding: 24px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+
+    button {
+        padding: 12px;
+    }
+}

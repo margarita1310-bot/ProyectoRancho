@@ -14,425 +14,46 @@
     <link rel="stylesheet" href="/app/views/admin/admin-style.css">
 </head>
 <body>
-    <!--Side bar-->
     <div class="d-flex">
-        <div class="sidebar p-3">
-            <h4 class="mb-4">Panel de Administración</h4>
-            <hr>
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="#" class="nav-link active" onclick="mostrarContenido('inicio')">
-                        <i class="bi bi-speedometer2 me-2"></i> Inicio
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="mostrarContenido('promociones')">
-                        <i class="bi bi-percent me-2"></i> Promociones
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="mostrarContenido('eventos')">
-                        <i class="bi bi-calendar-event me-2"></i> Eventos
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="mostrarContenido('menu')">
-                        <i class="bi bi-list-ul me-2"></i> Menú
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="mostrarContenido('reservas')">
-                        <i class="bi bi-journal-check me-2"></i> Reservas
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link" onclick="mostrarContenido('mesas')">
-                        <i class="bi bi-grid-3x3 me-2"></i> Mesas
-                    </a>
-                </li>
-            </ul>
-            <hr>
-            <div class="dropdown">
-                <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle" id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="/vista/images/logo.jpg" alt="" width="32" height="32" class="rounded-circle me-2">
-                    <strong>Rancho La Joya</strong>
-                </a>
-                <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2">
-                    <li><a class="dropdown-item" href="#">Configuración</a></li>
-                    <li><a class="dropdown-item" href="#">Perfil</a></li>
-                    <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="../../app/controllers/AdminController.php?action=logout">Cerrar sesión</a></li>
-                </ul>
-            </div>
-        </div>
+        <!--Side bar-->
+        <?php include 'sidebar.php'; ?>
         
-        <!--Elementos por pagina-->
-        <div class="content flex-grow-1 p-4">
+        <!--Contenido de la pagina-->
+        <div class="content flex-grow-1 p-3">
             <!--Inicio-->
-            <div id="inicio" class="d-none">
-            </div>
+            <?php include 'inicio.php'; ?>
             <!--Promociones-->
-        <div id="promociones" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1>
-                    Promociones
-                    <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip"
-                    title="Aquí podrás gestionar las promociones activas y crear nuevas."></i>
-                </h1>
-                <button id="btn-create-promociones" class="btn btn-sm" onclick="abrirModal('crear','promociones')">
-                    <i class="bi bi-plus-circle me-2"></i>Agregar promoción
-                </button>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Fecha inicio</th>
-                            <th>Fecha fin</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td id="nombre-promocion"></td>
-                            <td id="descripcion-promocion"></td>
-                            <td id="fecha-inicio-promocion"></td>
-                            <td id="fecha-fin-promocion"></td>
-                            <td id="estado-promocion"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <button id="btn-delete-promociones" class="btn btn-sm" onclick="mostrarAlertaEliminar('promociones')">
-                    <i class="bi bi-trash me-2"></i>Eliminar
-                </button>
-                <button id="btn-update-promociones" class="btn btn-sm" onclick="abrirModal('editar','promociones', datosPromocion)">
-                    <i class="bi bi-pencil-square me-2"></i>Modificar
-                </button>
-            </div>
+            <?php include 'PromocionView.php'; ?>
+            <!--Eventos-->
+            <?php include 'EventoView.php'; ?>
+            <!--Menu-->
+            <?php include 'ProductoView.php'; ?>
+            <!--Reservas-->
+            <?php include 'reservas.php'; ?>
+            <!--Mesas-->
+            <?php include 'mesas.php'; ?>
+            <!-- Modales -->
+            <?php include 'modals/crear-producto.php'; ?>
+            <?php include 'modals/editar-producto.php'; ?>
+            <?php include 'modals/crear-promocion.php'; ?>
+            <?php include 'modals/editar-promocion.php'; ?>
+            <?php include 'modals/crear-evento.php'; ?>
+            <?php include 'modals/editar-evento.php'; ?>
+            <?php include 'modals/eliminar.php'; ?>
+            <?php include 'modals/crear-disponibilidad-mesas.php'; ?>
+            <!-- Toast container -->
+            <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true"></div>
         </div>
-        <!--Eventos-->
-        <div id="eventos" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1>
-                    Eventos
-                    <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip"
-                    title="Sección para la gestión de eventos próximos o pasados."></i>
-                </h1>
-                <button id="btn-create-eventos" class="btn btn-sm" onclick="abrirModal('crear','eventos')">
-                    <i class="bi bi-plus-circle me-2"></i>Agregar evento
-                </button>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Nombre</th>
-                            <th>Descripción</th>
-                            <th>Fecha</th>
-                            <th>Hora inicio</th>
-                            <th>Hora fin</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td id="nombre-evento"></td>
-                            <td id="descripcion-evento"></td>
-                            <td id="fecha-evento"></td>
-                            <td id="hora-inicio-evento"></td>
-                            <td id="hora-fin-evento"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <button id="btn-delete-eventos" class="btn btn-sm" onclick="abrirDelete('eventos')">
-                    <i class="bi bi-trash me-2"></i>Eliminar
-                </button>
-                <button id="btn-update-eventos" class="btn btn-sm" onclick="abrirModal('editar','eventos')">
-                    <i class="bi bi-pencil-square me-2"></i>Modificar
-                </button>
-            </div>
-        </div>
-        <!--Menú-->
-        <div id="menu" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1>
-                    Menú
-                    <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip"
-                    title="Gestión de los elementos del menú (tacos, botellas, etc.)"></i>
-                </h1>
-                <button id="btn-create-menu" class="btn btn-sm" onclick="abrirModal('crear','menu')">
-                    <i class="bi bi-plus-circle me-2"></i>Agregar producto
-                </button>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Producto</th>
-                            <th>Precio</th>
-                            <th>Categoria</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td id="nombre-producto"></td>
-                            <td id="precio-producto"></td>
-                            <td id="categoria-producto"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <button id="btn-delete-menu" class="btn btn-sm" onclick="abrirDelete('menu')">
-                    <i class="bi bi-trash me-2"></i>Eliminar
-                </button>
-                <button id="btn-update-menu" class="btn btn-sm" onclick="abrirModal('editar','menu')">
-                    <i class="bi bi-pencil-square me-2"></i>Modificar
-                </button>
-            </div>
-        </div>
-        <!--Reserva-->
-        <div id="reservas" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1>
-                    Reservas
-                    <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip"
-                    title="Consulta y administra las reservaciones realizadas."></i>
-                </h1>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Cliente</th>
-                            <th>Telefono</th>
-                            <th>Correo</th>
-                            <th>Mesa</th>
-                            <th>Personas</th>
-                            <th>Fecha</th>
-                            <th>Hora</th>
-                            <th>Estado</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td id="cliente-reserva"></td>
-                            <td id="telefono-reserva"></td>
-                            <td id="correo-reserva"></td>
-                            <td id="mesa-reserva"></td>
-                            <td id="personas-reserva"></td>
-                            <td id="fecha-reserva"></td>
-                            <td id="hora-reserva"></td>
-                            <td id="estado-reserva"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <button id="btn-delete" class="btn btn-sm" onclick="abrirDelete()">
-                    <i class="bi bi-trash me-2"></i>Eliminar
-                </button>
-                <button id="btn-update" class="btn btn-sm" onclick="abrirUpdate()">
-                    <i class="bi bi-pencil-square me-2"></i>Modificar
-                </button>
-            </div>
-        </div>
-        <!--Mesas-->
-        <div id="mesas" class="d-none">
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h1>
-                    Mesas
-                    <i class="bi bi-info-circle ms-2" data-bs-toggle="tooltip"
-                    title="Configura el número de mesas disponibles por día."></i>
-                </h1>
-                <button id="btn-create-mesas" class="btn btn-sm" onclick="abrirModal('crear','mesas')">
-                    <i class="bi bi-plus-circle me-2"></i>Agregar disponibilidad
-                </button>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle">
-                    <thead>
-                        <tr>
-                            <th>Numero</th>
-                            <th>Cliente</th>
-                            <th>Fecha</th>
-                            <th>Hora</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td id="numero-mesas"></td>
-                            <td id="cliente-mesas"></td>
-                            <td id="fecha-mesas"></td>
-                            <td id="hora-mesas"></td>
-                            <td id="accion-mesas"></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <button id="btn-update-mesas" class="btn btn-sm" onclick="abrirModal('editar','mesas')">
-                    <i class="bi bi-pencil-square me-2"></i>Modificar
-                </button>
-            </div>
-        </div>
-    </div>
-    <!--Modal general de promociones-->
-    <section id="modal-promociones" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="titulo-modal-promociones">Nueva Promoción</h2>
-            <form id="form-promociones" class="text-start">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h3>Información general</h3>
-                        <div class="mb-3">
-                            <label for="nombrePromocion" class="form-label">Nombre de la promoción</label>
-                            <input type="text" class="form-control" id="nombrePromocion" placeholder="Ej. 2x1 en bebidas">
-                        </div>
-                        <div class="mb-3">
-                            <label for="descripcionPromocion" class="form-label">Descripción</label>
-                            <input type="text" class="form-control" id="descripcionPromocion" placeholder="Describe la promoción...">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h3>Vigencia</h3>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="fechaInicioPromocion" class="form-label">Fecha de inicio</label>
-                                    <input type="date" class="form-control" id="fechaInicioPromocion">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="fechaFinPromocion" class="form-label">Fecha de finalización</label>
-                                    <input type="date" class="form-control" id="fechaFinPromocion">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="estadoPromocion" class="form-label">Estado</label>
-                            <select class="form-select" id="estadoPromocion">
-                                <option selected disabled>Selecciona una opción</option>
-                                <option value="activo">Activo</option>
-                                <option value="inactivo">Inactivo</option>
-                            </select>
-                        </div>
-                        <h3>Portada</h3>
-                        <div class="input-group mb-3">
-                            <input type="file" class="form-control" id="portadaPromocion">
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                    <button id="btn-guardar-promociones" class="btn btn-sm"></button>
-                    <button id="btn-cancel-promociones" class="btn btn-sm" onclick="cerrarModal('promociones')">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </section>
-    <!--Modal general de eventos-->
-    <section id="modal-eventos" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="titulo-modal-eventos">Nuevo Evento</h2>
-            <form id="form-eventos" class="text-start">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h3>Información general</h3>
-                        <div class="mb-3">
-                            <label for="nombreEvento" class="form-label">Nombre de el evento</label>
-                            <input type="text" class="form-control" id="nombreEvento" placeholder="Ej. Fiesta temática">
-                        </div>
-                        <div class="mb-3">
-                            <label for="descripcionEvento" class="form-label">Descripción</label>
-                            <input type="text" class="form-control" id="descripcionEvento" placeholder="Describe el evento...">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <h3>Fecha y hora</h3>
-                        <div class="mb-3">
-                            <label for="fechaEvento" class="form-label">Fecha</label>
-                            <input type="date" class="form-control" id="fechaEvento">
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="horaInicioEvento" class="form-label">Hora de inicio</label>
-                                    <input type="time" class="form-control" id="horaInicioEvento">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="horaFinEvento" class="form-label">Hora de finalización</label>
-                                    <input type="time" class="form-control" id="horaFinEvento">
-                                </div>
-                            </div>
-                        </div>
-                        <h3>Portada</h3>
-                        <div class="input-group mb-3">
-                            <input type="file" class="form-control" id="portadaEvento">
-                        </div>
-                    </div>
-                </div>
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                    <button id="btn-guardar-eventos" class="btn btn-sm"></button>
-                    <button id="btn-cancel-eventos" class="btn btn-sm" onclick="cerrarModal('eventos')">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </section>
-    <!--Modal general del menu-->
-    <section id="modal-menu" class="modal-overlay">
-        <div class="modal-content">
-            <h2 id="titulo-modal-menu"></h2>
-            <form id="form-menu" class="text-start">
-                <div class="row">
-                    <div class="mb-3">
-                        <label for="nombreProducto" class="form-label">Producto</label>
-                        <input type="text" class="form-control" id="nombreProducto" placeholder="Ej. Bacardi">
-                    </div>
-                    <div class="mb-3">
-                        <label for="precioProducto" class="form-label">Precio</label>
-                        <input type="number" class="form-control" id="precioProducto" placeholder="Ej. $200">
-                    </div>
-                    <div class="mb-3">
-                        <label for="categoriaProducto" class="form-label">Categoria</label>
-                        <select class="form-select" id="categoriaProducto">
-                            <option selected disabled>Selecciona una opción</option>
-                            <option value="botella">Botella</option>
-                            <option value="coctel">Coctel</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="d-flex flex-wrap gap-2 mt-3">
-                    <button id="btn-guardar-menu" class="btn btn-sm"></button>
-                    <button id="btn-cancel-menu" class="btn btn-sm" onclick="cerrarModal('menu')">Cancelar</button>
-                </div>
-            </form>
-        </div>
-    </section>
-    <!--Modal de confirmacion de eliminacion-->
-    <!--
-    <section id="delete-overlay" class="delete-overlay">
-        <div class="delete-box">
-            <h2 id="delete-title">Eliminar elemento</h2>
-            <p id="delete-message">¿Estás seguro de eliminar este elemento? Esta acción no se puede deshacer.</p>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <button id="btn-confirm" class="btn btn-sm" data-bs-toggle="tooltip">Confirmar</button>
-                <button id="btn-cancel-delete" class="btn btn-sm" data-bs-toggle="tooltip" onclick="cerrarDelete()">Cancelar</button>
-            </div>
-        </div>
-    </section>
--->
     <!--Link Boostrap JS-->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <!--Script JS-->
-    <script src="/app/views/admin/admin-js.js"></script>
+    <!--Script JS divididos por responsabilidad-->
+    <script src="/app/views/admin/js/utils.js"></script>
+    <script src="/app/views/admin/js/nav.js"></script>
+    <script src="/app/views/admin/js/BtnEliminarJs.js"></script>
+    <script src="/app/views/admin/js/BtnEditarJs.js"></script>
+    <script src="/app/views/admin/js/ProductoJs.js"></script>
+    <script src="/app/views/admin/js/PromocionJs.js"></script>
+    <script src="/app/views/admin/js/EventoJs.js"></script>
+    <script src="/app/views/admin/js/mesas.js"></script>
 </body>
 </html>
