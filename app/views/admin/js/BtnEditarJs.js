@@ -1,5 +1,5 @@
  /*
- * BtnEtitarJs.js
+ * BtnEditarJs.js
  * 
  * Abre modales de edición cargando datos existentes del servidor.
  * 

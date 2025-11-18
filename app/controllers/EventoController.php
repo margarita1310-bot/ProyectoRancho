@@ -58,8 +58,8 @@ class EventoController {
 		$errors = [];
 		if (!$nombre) $errors[] = 'nombre_required';
 		if (!$fecha || !DateTime::createFromFormat('Y-m-d', $fecha)) $errors[] = 'fecha_invalid';
-		if ($hora_inicio || !preg_match('/^[0-2][0-9]:[0-5][0-9]$/', $hora_inicio)) $errors[] = 'hora_inicio_invalid';
-		if ($hora_fin || !preg_match('/^[0-2][0-9]:[0-5][0-9]$/', $hora_fin)) $errors[] = 'hora_fin_invalid';
+		if (!$hora_inicio || !preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$/', $hora_inicio)) $errors[] = 'hora_inicio_invalid';
+		if ($hora_fin && !preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$/', $hora_fin)) $errors[] = 'hora_fin_invalid';
 
 		if (!empty($errors)) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>$errors]); return; }
 
@@ -120,9 +120,9 @@ class EventoController {
 		$errors = [];
 		if (!$id || !ctype_digit($id)) $errors[] = 'id_invalid';
 		if (!$nombre) $errors[] = 'nombre_required';
-		if ($fecha || !DateTime::createFromFormat('Y-m-d', $fecha)) $errors[] = 'fecha_invalid';
-		if ($hora_inicio || !preg_match('/^[0-2][0-9]:[0-5][0-9]$/', $hora_inicio)) $errors[] = 'hora_inicio_invalid';
-		if ($hora_fin || !preg_match('/^[0-2][0-9]:[0-5][0-9]$/', $hora_fin)) $errors[] = 'hora_fin_invalid';
+		if (!$fecha || !DateTime::createFromFormat('Y-m-d', $fecha)) $errors[] = 'fecha_invalid';
+		if (!$hora_inicio || !preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$/', $hora_inicio)) $errors[] = 'hora_inicio_invalid';
+		if ($hora_fin && !preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9](?::[0-5][0-9])?$/', $hora_fin)) $errors[] = 'hora_fin_invalid';
 
 		if (!empty($errors)) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>$errors]); return; }
 

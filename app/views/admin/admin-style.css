@@ -194,29 +194,6 @@ form .input-group {
 .eliminar-box .d-flex {
     justify-content: center;
 }
-
-/*Caracteristicas al ser responsiva*/
-/*Tablet*/
-@media (max-width: 992px) {
-}
-
-/* variantes visuales para el modal de confirmación */
-/*
-.eliminar-box.danger {
-    border-color: #9A2F2F;
-}
-.eliminar-box.danger h2,
-.eliminar-box.danger p {
-    color: #9A2F2F;
-}
-.eliminar-box.warn {
-    border-color: #E09B2D;
-}
-.eliminar-box.warn h2,
-.eliminar-box.warn p {
-    color: #E09B2D;
-}
-    */
 /*Caracteristicas al ser responsiva*/
 /*Tablet*/
 @media (max-width: 992px) {

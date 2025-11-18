@@ -86,8 +86,8 @@ if (btnEditarEvento) btnEditarEvento.addEventListener('click', (e) => {
 });
 
 // Cancelar editar evento
-const btnCancelarEditEvento = document.getElementById('btn-cancelar-editar-evento');
-if (btnCancelarEditEvento) btnCancelarEditEvento.addEventListener('click', (e) => {
+const btnCancelarEditarEvento = document.getElementById('btn-cancelar-editar-evento');
+if (btnCancelarEditarEvento) btnCancelarEditarEvento.addEventListener('click', (e) => {
     e.preventDefault();
     const modal = document.getElementById('modal-editar-evento');
     if (modal) {
