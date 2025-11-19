@@ -1,90 +1,73 @@
 /**
  * DisponibilidadAdminJS.js
  * 
- * Maneja la creación y gestión de disponibilidad de mesas.
- * Incluye validaciones para evitar modificar cuando existen reservas activas.
+ * Gestión de disponibilidad de mesas por fecha.
+ * Permite crear y actualizar la cantidad de mesas disponibles.
  */
 
-document.addEventListener('DOMContentLoaded', function() {
-    const formCrearDisponibilidad = document.getElementById('form-crear-disponibilidad');
-    const modalCrearDisponibilidad = document.getElementById('modal-crear-disponibilidad');
-    const alertaReservas = document.getElementById('alerta-reservas');
-
-    // Manejar envío del formulario
-    if (formCrearDisponibilidad) {
-        formCrearDisponibilidad.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const fecha = document.getElementById('disponibilidad-fecha').value;
-            const cantidad = document.getElementById('disponibilidad-cantidad').value;
-
-            // Validaciones básicas
-            if (!fecha || !cantidad) {
-                showToast('error', 'Por favor completa todos los campos');
-                return;
-            }
-
-            if (cantidad < 1 || cantidad > 50) {
-                showToast('error', 'La cantidad de mesas debe estar entre 1 y 50');
-                return;
-            }
-
-            try {
-                const formData = new FormData();
-                formData.append('fecha', fecha);
-                formData.append('cantidad', cantidad);
-
-                const response = await fetch('../../app/controllers/DisponibilidadController.php?action=guardar', {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    const text = await response.text();
-                    console.error('Error response:', text);
-                    showToast('error', 'Error del servidor al guardar la disponibilidad');
-                    return;
-                }
-
-                const result = await response.json();
-
-                if (result.status === 'ok') {
-                    showToast('success', 'Disponibilidad guardada correctamente');
-                    modalCrearDisponibilidad.classList.remove('active');
-                    formCrearDisponibilidad.reset();
-                    
-                    // Recargar la página para mostrar las mesas actualizadas
-                    setTimeout(() => {
-                        location.reload();
-                    }, 1500);
-                } else if (result.message === 'has_reservations') {
-                    showToast('error', 'No se puede modificar la disponibilidad porque existen reservas activas para esta fecha');
-                    if (alertaReservas) {
-                        alertaReservas.classList.remove('d-none');
-                    }
-                } else {
-                    showToast('error', result.detail || result.message || 'Error al guardar la disponibilidad');
-                }
-            } catch (error) {
-                console.error('Error:', error);
-                showToast('error', 'Error al procesar la solicitud');
-            }
-        });
+// Guardar disponibilidad de mesas
+const btnGuardarMesas = document.getElementById('btn-guardar-mesas');
+if (btnGuardarMesas) btnGuardarMesas.addEventListener('click', async (e) => {
+    e.preventDefault();
+    
+    const modal = document.getElementById('modal-create-mesas');
+    if (!modal) return;
+    
+    const fecha = modal.querySelector('#mesas-fecha') ? modal.querySelector('#mesas-fecha').value : '';
+    const cantidad = modal.querySelector('#mesas-cantidad') ? modal.querySelector('#mesas-cantidad').value : '';
+    
+    if (!fecha || !cantidad) {
+        showToast('Error', 'Todos los campos son obligatorios', 'danger');
+        return;
     }
-
-    // Limpiar alertas al abrir el modal
-    const btnCrearDisponibilidad = document.getElementById('btn-crear-disponibilidad');
-    if (btnCrearDisponibilidad) {
-        btnCrearDisponibilidad.addEventListener('click', function() {
-            if (alertaReservas) {
-                alertaReservas.classList.add('d-none');
-            }
-            if (formCrearDisponibilidad) {
-                formCrearDisponibilidad.reset();
-            }
+    
+    const formData = new FormData();
+    formData.append('fecha', fecha);
+    formData.append('cantidad', cantidad);
+    
+    try {
+        const response = await fetch('../../app/controllers/DisponibilidadController.php?action=guardar', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
         });
+        
+        if (!response.ok) {
+            const text = await response.text();
+            console.error('Error response:', text);
+            showToast('Error', 'Error del servidor', 'danger');
+            return;
+        }
+        
+        const data = await response.json();
+        
+        if (data.status === 'ok') {
+            showToast('Éxito', 'Disponibilidad guardada correctamente', 'success');
+            modal.classList.remove('active');
+            modal.classList.add('d-none');
+            const form = document.getElementById('form-create-mesas');
+            if (form) form.reset();
+            location.reload();
+        } else if (data.status === 'error' && data.message === 'has_reservations') {
+            showToast('Error', data.detail || 'No se puede modificar, existen reservas activas', 'warning');
+        } else {
+            showToast('Error', 'Error al guardar disponibilidad', 'danger');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error', 'Error de red al guardar disponibilidad', 'danger');
     }
+});
+
+// Cancelar modal de disponibilidad
+const btnCancelarMesas = document.getElementById('btn-cancelar-mesas');
+if (btnCancelarMesas) btnCancelarMesas.addEventListener('click', (e) => {
+    e.preventDefault();
+    const modal = document.getElementById('modal-create-mesas');
+    if (modal) {
+        modal.classList.remove('active');
+        modal.classList.add('d-none');
+    }
+    const form = document.getElementById('form-create-mesas');
+    if (form) form.reset();
 });

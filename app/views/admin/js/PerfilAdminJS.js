@@ -5,28 +5,18 @@
  * Carga y muestra los datos del administrador logueado.
  */
 
-/**
- * abrirModalPerfil()
- * 
- * Abre el modal de perfil y carga los datos del administrador.
- */
+// Abrir modal de perfil
 async function abrirModalPerfil() {
-    console.log('Abriendo modal de perfil...');
     try {
         const response = await fetch('../../app/controllers/AdminController.php?action=getPerfil', {
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-
-        console.log('Response status:', response.status);
 
         if (!response.ok) {
             throw new Error('Error al cargar perfil');
         }
 
         const data = await response.json();
-        console.log('Datos recibidos:', data);
 
         if (data.status === 'ok') {
             document.getElementById('perfil-nombre').value = data.admin.nombre || '';
@@ -44,11 +34,7 @@ async function abrirModalPerfil() {
     }
 }
 
-/**
- * cerrarModalPerfil()
- * 
- * Cierra el modal de perfil.
- */
+// Cerrar modal de perfil
 function cerrarModalPerfil() {
     const modal = document.getElementById('modal-perfil-admin');
     modal.classList.remove('active');
