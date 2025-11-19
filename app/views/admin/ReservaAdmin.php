@@ -30,16 +30,47 @@
                             <td><?= htmlspecialchars($res['fecha']) ?></td>
                             <td><?= htmlspecialchars($res['hora']) ?></td>
                             <td><?= htmlspecialchars($res['num_personas']) ?></td>
-                            <td><?= htmlspecialchars($res['id_mesa']) ?></td>
-                            <td><?= htmlspecialchars($res['estado']) ?></td>
+                            <td>
+                                <?php if ($res['id_mesa']): ?>
+                                    Mesa <?= htmlspecialchars($res['id_mesa']) ?>
+                                <?php else: ?>
+                                    <span class="text-muted">Sin asignar</span>
+                                <?php endif; ?>
+                            </td>
+                            <td>
+                                <?php if ($res['estado'] === 'pendiente'): ?>
+                                    <span class="badge bg-warning text-dark">Pendiente</span>
+                                <?php elseif ($res['estado'] === 'confirmada'): ?>
+                                    <span class="badge bg-success">Confirmada</span>
+                                <?php else: ?>
+                                    <span class="badge bg-danger">Cancelada</span>
+                                <?php endif; ?>
+                            </td>
                             <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center flex-wrap">
-                                    <button class="btn btn-confirmar-reserva" data-id="<?= $res['id_reserva'] ?>" data-controller="Reserva">
-                                        <i class="bi bi-check-circle"></i>Confirmar
-                                    </button>
-                                    <button class="btn btn-cancelar-reserva" data-id="<?= $res['id_reserva'] ?>" data-controller="Reserva">
-                                        <i class="bi bi-x-circle"></i>Cancelar
-                                    </button>
+                                    <?php if ($res['estado'] === 'pendiente'): ?>
+                                        <button class="btn btn-confirmar-reserva btn-sm btn-success" 
+                                                data-id="<?= $res['id_reserva'] ?>" 
+                                                data-controller="Reserva"
+                                                title="Confirmar reserva">
+                                            <i class="bi bi-check-circle"></i> Confirmar
+                                        </button>
+                                        <button class="btn btn-cancelar-reserva btn-sm btn-danger" 
+                                                data-id="<?= $res['id_reserva'] ?>" 
+                                                data-controller="Reserva"
+                                                title="Cancelar reserva">
+                                            <i class="bi bi-x-circle"></i> Cancelar
+                                        </button>
+                                    <?php elseif ($res['estado'] === 'confirmada'): ?>
+                                        <button class="btn btn-cancelar-reserva btn-sm btn-danger" 
+                                                data-id="<?= $res['id_reserva'] ?>" 
+                                                data-controller="Reserva"
+                                                title="Cancelar reserva">
+                                            <i class="bi bi-x-circle"></i> Cancelar
+                                        </button>
+                                    <?php else: ?>
+                                        <span class="text-muted">No hay acciones</span>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>

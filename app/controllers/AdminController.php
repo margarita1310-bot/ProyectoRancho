@@ -23,6 +23,9 @@ class AdminController {
         require_once __DIR__ . '/../models/PromocionModel.php';
         require_once __DIR__ . '/../models/EventoModel.php';
         require_once __DIR__ . '/../models/ProductoModel.php';
+        require_once __DIR__ . '/../models/ReservaModel.php';
+        require_once __DIR__ . '/../models/DisponibilidadModel.php';
+        require_once __DIR__ . '/../models/MesaModel.php';
         
         $promModel = new PromocionModel();
         $promocion = $promModel->getAll();
@@ -33,8 +36,113 @@ class AdminController {
         $productoModel = new ProductoModel();
         $producto = $productoModel->getAll();
 
+        $reservaModel = new ReservaModel();
+        $reserva = $reservaModel->getAll();
+
+        $disponibilidadModel = new DisponibilidadModel();
+        $disponibilidad = $disponibilidadModel->getAll();
+
+        $mesaModel = new MesaModel();
+        $mesas = $mesaModel->getMesasActivas();
 
         include '../../app/views/admin/DashboardAdmin.php';
+    }
+
+     /*
+     * getEstadisticas()
+     * 
+     * Retorna estadísticas para el dashboard en formato JSON.
+     * Cuenta promociones activas, eventos próximos, reservas pendientes y mesas disponibles.
+     * 
+     * @return void - Retorna JSON
+     */
+    public function getEstadisticas() {
+        header('Content-Type: application/json; charset=utf-8');
+        
+        require_once __DIR__ . '/../models/PromocionModel.php';
+        require_once __DIR__ . '/../models/EventoModel.php';
+        require_once __DIR__ . '/../models/ReservaModel.php';
+        require_once __DIR__ . '/../models/MesaModel.php';
+        
+        try {
+            // Contar promociones activas
+            $promModel = new PromocionModel();
+            $promociones = $promModel->getAll();
+            $promosActivas = count(array_filter($promociones, function($p) {
+                return $p['activa'] == 1;
+            }));
+            
+            // Contar eventos próximos (desde hoy en adelante)
+            $evModel = new EventoModel();
+            $eventos = $evModel->getAll();
+            $eventosProximos = count(array_filter($eventos, function($e) {
+                return strtotime($e['fecha']) >= strtotime(date('Y-m-d'));
+            }));
+            
+            // Contar reservas pendientes
+            $reservaModel = new ReservaModel();
+            $reservas = $reservaModel->getAll();
+            $reservasPendientes = count(array_filter($reservas, function($r) {
+                return $r['estado'] === 'pendiente';
+            }));
+            
+            // Contar mesas disponibles
+            $mesaModel = new MesaModel();
+            $mesas = $mesaModel->getMesasActivas();
+            $mesasDisponibles = count(array_filter($mesas, function($m) {
+                return $m['estado'] === 'Disponible';
+            }));
+            
+            echo json_encode([
+                'status' => 'ok',
+                'promociones' => $promosActivas,
+                'eventos' => $eventosProximos,
+                'reservas' => $reservasPendientes,
+                'mesas' => $mesasDisponibles
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'db_error']);
+        }
+    }
+
+     /*
+     * getPerfil()
+     * 
+     * Retorna los datos del administrador logueado en formato JSON.
+     * 
+     * @return void - Retorna JSON con nombre y correo del admin
+     */
+    public function getPerfil() {
+        header('Content-Type: application/json; charset=utf-8');
+        
+        if (!isset($_SESSION['admin']) || !isset($_SESSION['admin']['id_admin'])) {
+            http_response_code(401);
+            echo json_encode(['status' => 'error', 'message' => 'unauthorized']);
+            return;
+        }
+        
+        require_once __DIR__ . '/../models/Conexion.php';
+        
+        try {
+            $db = Conexion::conectar();
+            $stmt = $db->prepare("SELECT id_admin, nombre, correo FROM administrador WHERE id_admin = ?");
+            $stmt->execute([$_SESSION['admin']['id_admin']]);
+            $admin = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($admin) {
+                echo json_encode([
+                    'status' => 'ok',
+                    'admin' => $admin
+                ]);
+            } else {
+                http_response_code(404);
+                echo json_encode(['status' => 'error', 'message' => 'not_found']);
+            }
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['status' => 'error', 'message' => 'db_error']);
+        }
     }
 
      /*

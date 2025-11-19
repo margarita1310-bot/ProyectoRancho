@@ -26,14 +26,6 @@ class DisponibilidadController {
      * listar()
      * 
      * Retorna disponibilidad de mesas para una fecha específica.
-     * 
-     * Parámetros esperados (GET):
-     * - fecha: fecha en formato YYYY-MM-DD (obligatoria)
-     * 
-     * Respuestas:
-     * - 200: {id, fecha, cantidad, created_at} (JSON) o {fecha, cantidad: 0} si no existe
-     * - 400: {"status":"error","message":"missing_fecha"}
-     * 
      * @return void - Retorna JSON
      */
     public function listar() {
@@ -47,26 +39,31 @@ class DisponibilidadController {
 
      /*
      * guardar()
-     * 
      * Crea disponibilidad para una fecha o actualiza si ya existe (UPSERT).
-     * 
-     * Parámetros esperados (POST):
-     * - fecha: fecha en formato YYYY-MM-DD (obligatoria)
-     * - cantidad: cantidad de mesas disponibles (numeric, obligatoria)
-     * 
-     * Respuestas:
-     * - 200: {"status":"ok"}
-     * - 400: {"status":"error","message":"invalid_input"}
-     * - 500: {"status":"error","message":"db_error"}
-     * 
+     * Valida que no existan reservas activas antes de permitir la creación.
+     * Al guardar, activa automáticamente las mesas correspondientes.
      * @return void - Retorna JSON
      */
     public function guardar() {
         header('Content-Type: application/json; charset=utf-8');
         $fecha = $_POST['fecha'] ?? null;
         $cantidad = $_POST['cantidad'] ?? null;
-        if (!$fecha || !$cantidad || !ctype_digit(strval($cantidad))) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'invalid_input']); return; }
+        
+        if (!$fecha || !$cantidad || !ctype_digit(strval($cantidad))) { 
+            http_response_code(400); 
+            echo json_encode(['status'=>'error','message'=>'invalid_input']); 
+            return; 
+        }
+        
         $m = new DisponibilidadModel();
+        
+        // Verificar si hay reservas activas para esa fecha
+        if ($m->tieneReservas($fecha)) {
+            http_response_code(409);
+            echo json_encode(['status'=>'error','message'=>'has_reservations', 'detail'=>'No se puede modificar la disponibilidad porque existen reservas activas para esta fecha']);
+            return;
+        }
+        
         $ok = $m->create($fecha, intval($cantidad));
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'db_error']);
     }
@@ -75,14 +72,17 @@ class DisponibilidadController {
      * actualizar()
      * 
      * Actualiza la cantidad de mesas disponibles para un registro.
+     * Valida que no existan reservas activas antes de permitir la modificación.
      * 
      * Parámetros esperados (POST):
      * - id: ID del registro (numeric, obligatoria)
      * - cantidad: nueva cantidad (numeric, obligatoria)
+     * - fecha: fecha del registro (para validar reservas)
      * 
      * Respuestas:
      * - 200: {"status":"ok"}
      * - 400: {"status":"error","message":"invalid_input"}
+     * - 409: {"status":"error","message":"has_reservations"}
      * - 500: {"status":"error","message":"db_error"}
      * 
      * @return void - Retorna JSON
@@ -91,8 +91,23 @@ class DisponibilidadController {
         header('Content-Type: application/json; charset=utf-8');
         $id = $_POST['id'] ?? null;
         $cantidad = $_POST['cantidad'] ?? null;
-        if (!$id || !ctype_digit(strval($id)) || !$cantidad || !ctype_digit(strval($cantidad))) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'invalid_input']); return; }
+        $fecha = $_POST['fecha'] ?? null;
+        
+        if (!$id || !ctype_digit(strval($id)) || !$cantidad || !ctype_digit(strval($cantidad))) { 
+            http_response_code(400); 
+            echo json_encode(['status'=>'error','message'=>'invalid_input']); 
+            return; 
+        }
+        
         $m = new DisponibilidadModel();
+        
+        // Si se proporciona fecha, verificar reservas
+        if ($fecha && $m->tieneReservas($fecha)) {
+            http_response_code(409);
+            echo json_encode(['status'=>'error','message'=>'has_reservations', 'detail'=>'No se puede modificar la disponibilidad porque existen reservas activas']);
+            return;
+        }
+        
         $ok = $m->update(intval($id), intval($cantidad));
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'db_error']);
     }

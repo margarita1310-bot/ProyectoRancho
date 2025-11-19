@@ -31,7 +31,7 @@
             <!--Reservas-->
             <?php include 'ReservaAdmin.php'; ?>
             <!--Mesas-->
-            <?php include 'DisponibilidadAdmin.php'; ?>
+            <?php include 'MesaAdmin.php'; ?>
             <!-- Modales -->
             <?php include 'modals/crear-producto.php'; ?>
             <?php include 'modals/editar-producto.php'; ?>
@@ -41,6 +41,7 @@
             <?php include 'modals/editar-evento.php'; ?>
             <?php include 'modals/eliminar.php'; ?>
             <?php include 'modals/crear-disponibilidad-mesas.php'; ?>
+            <?php include 'modals/perfil-admin.php'; ?>
             <!-- Toast container -->
             <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true"></div>
         </div>
@@ -49,11 +50,15 @@
     <!--Script JS divididos por responsabilidad-->
     <script src="/app/views/admin/js/utils.js"></script>
     <script src="/app/views/admin/js/nav.js"></script>
+    <script src="/app/views/admin/js/DashboardAdminJS.js"></script>
+    <script src="/app/views/admin/js/PerfilAdminJS.js"></script>
     <script src="/app/views/admin/js/EliminarAdminJS.js"></script>
     <script src="/app/views/admin/js/EditarAdminJS.js"></script>
     <script src="/app/views/admin/js/ProductoAdminJS.js"></script>
     <script src="/app/views/admin/js/PromocionAdminJS.js"></script>
     <script src="/app/views/admin/js/EventoAdminJS.js"></script>
+    <script src="/app/views/admin/js/DisponibilidadAdminJS.js"></script>
+    <script src="/app/views/admin/js/ReservaAdminJS.js"></script>
     <script src="/app/views/admin/js/mesas.js"></script>
 </body>
 </html>

@@ -125,13 +125,15 @@ form .input-group {
 #btn-crear-promocion,
 #btn-crear-evento,
 #btn-crear-producto,
-#btn-crear-mesa {
+#btn-crear-mesa,
+#btn-crear-disponibilidad {
     background-color: #11422A;
 }
 #btn-crear-promocion:hover,
 #btn-crear-evento:hover,
 #btn-crear-producto:hover,
-#btn-crear-mesa:hover {
+#btn-crear-mesa:hover,
+#btn-crear-disponibilidad:hover {
     background-color: #0e331f;
     color: #FFFFFF;
 }
@@ -180,6 +182,9 @@ form .input-group {
     background: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
+    z-index: 10500;
+    overflow-y: auto;
+    padding: 20px 10px;
 }
 .modal-overlay.activo,
 .modal-overlay.active,
@@ -194,6 +199,10 @@ form .input-group {
     border-radius: 16px;
     width: 90%;
     max-width: 800px;
+    z-index: 10501;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
 }
 .eliminar-box {
     width: 320px;
@@ -204,9 +213,39 @@ form .input-group {
     color: #200D02;
     text-align: center;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 10502;
 }
 .eliminar-box .d-flex {
     justify-content: center;
+}
+
+/* Ocultar sidebar cuando hay modal activo en móvil */
+@media (max-width: 768px) {
+    .modal-overlay.active ~ .sidebar,
+    .delete-overlay.active ~ .sidebar {
+        transform: translateX(-260px) !important;
+    }
+    
+    .modal-content {
+        width: 95%;
+        max-height: 85vh;
+        padding: 12px;
+    }
+    
+    .modal-content h2 {
+        font-size: 18px;
+    }
+    
+    .modal-content .form-control,
+    .modal-content .form-select {
+        font-size: 14px;
+        padding: 6px 10px;
+    }
+    
+    .modal-content .btn {
+        font-size: 13px;
+        padding: 5px 8px;
+    }
 }
 /*Caracteristicas al ser responsiva*/
 /*Tablet*/

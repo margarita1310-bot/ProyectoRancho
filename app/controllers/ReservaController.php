@@ -54,42 +54,124 @@ class ReservaController {
      /*
      * confirmar()
      * Marca una reserva como confirmada.
-     * Opcionalmente asigna un número de mesa a la reserva.
+     * Opcionalmente asigna un ID de mesa a la reserva y actualiza su estado.
+     * 
+     * Validaciones:
+     * - La reserva debe existir
+     * - La reserva debe estar en estado 'pendiente'
+     * - Si se asigna mesa, esta debe estar disponible
+     * 
      * Flujo:
      * 1. Valida ID de reserva
-     * 2. Si mesa se proporciona:
+     * 2. Verifica que la reserva esté pendiente
+     * 3. Si se proporciona id_mesa:
      *    - Valida que sea numérico
-     *    - Actualiza: estado='confirmada', mesa={numero}
-     * 3. Si mesa no se proporciona:
+     *    - Verifica que la mesa esté Disponible
+     *    - Actualiza: estado='confirmada', id_mesa={id}
+     *    - Actualiza mesa: estado='Ocupada', id_cliente={cliente}
+     * 4. Si no se proporciona mesa:
      *    - Actualiza solo: estado='confirmada'
+     * 
      * @return void - Retorna JSON
      */
     public function confirmar() {
         header('Content-Type: application/json; charset=utf-8');
         $id = isset($_POST['id']) ? trim($_POST['id']) : null;
-        if (!$id || !ctype_digit($id)) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'missing_id']); return; }
-        $mesa = isset($_POST['mesa']) ? trim($_POST['mesa']) : null;
+        
+        if (!$id || !ctype_digit($id)) { 
+            http_response_code(400); 
+            echo json_encode(['status'=>'error','message'=>'missing_id']); 
+            return; 
+        }
+        
         $res = new ReservaModel();
-        if ($mesa !== null && $mesa !== '') { 
-            if (!ctype_digit($mesa)) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'mesa_invalid']); return; }
-            $ok = $res->confirm(intval($id), intval($mesa));
+        
+        // Verificar que la reserva existe y está pendiente
+        $reserva = $res->getById(intval($id));
+        if (!$reserva) {
+            http_response_code(404);
+            echo json_encode(['status'=>'error','message'=>'reservation_not_found']);
+            return;
+        }
+        
+        if ($reserva['estado'] !== 'pendiente') {
+            http_response_code(400);
+            echo json_encode(['status'=>'error','message'=>'reservation_not_pending', 'detail'=>'La reserva ya fue procesada']);
+            return;
+        }
+        
+        $idMesa = isset($_POST['id_mesa']) ? trim($_POST['id_mesa']) : null;
+        
+        if ($idMesa !== null && $idMesa !== '') { 
+            if (!ctype_digit($idMesa)) { 
+                http_response_code(400); 
+                echo json_encode(['status'=>'error','message'=>'mesa_invalid']); 
+                return; 
+            }
+            
+            // Verificar que la mesa esté disponible
+            require_once __DIR__ . '/../models/MesaModel.php';
+            $mesaModel = new MesaModel();
+            $mesa = $mesaModel->getMesaById(intval($idMesa));
+            
+            if (!$mesa || !$mesa['activa']) {
+                http_response_code(400);
+                echo json_encode(['status'=>'error','message'=>'mesa_not_active', 'detail'=>'La mesa no está activa']);
+                return;
+            }
+            
+            if ($mesa['estado'] === 'Ocupada') {
+                http_response_code(400);
+                echo json_encode(['status'=>'error','message'=>'mesa_occupied', 'detail'=>'La mesa ya está Ocupada']);
+                return;
+            }
+            
+            $ok = $res->confirm(intval($id), intval($idMesa));
         } else {
             $ok = $res->confirm(intval($id));
         }
-        header('Content-Type: application/json; charset=utf-8');
+        
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo confirmar']);
     }
 
      /*
      * cancelar()
-     * Elimina (declina) una reserva.
+     * Elimina (cancela) una reserva.
+     * Si la reserva tenía mesa asignada, la libera automáticamente.
+     * 
+     * Validaciones:
+     * - La reserva debe existir
+     * - Solo se pueden cancelar reservas 'pendiente' o 'confirmada'
+     * 
      * @return void - Retorna JSON
      */
     public function cancelar() {
         header('Content-Type: application/json; charset=utf-8');
         $id = isset($_POST['id']) ? trim($_POST['id']) : null;
-        if (!$id || !ctype_digit($id)) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'missing_id']); return; }
+        
+        if (!$id || !ctype_digit($id)) { 
+            http_response_code(400); 
+            echo json_encode(['status'=>'error','message'=>'missing_id']); 
+            return; 
+        }
+        
         $res = new ReservaModel();
+        
+        // Verificar que la reserva existe
+        $reserva = $res->getById(intval($id));
+        if (!$reserva) {
+            http_response_code(404);
+            echo json_encode(['status'=>'error','message'=>'reservation_not_found']);
+            return;
+        }
+        
+        // No permitir cancelar reservas ya canceladas
+        if ($reserva['estado'] === 'cancelada') {
+            http_response_code(400);
+            echo json_encode(['status'=>'error','message'=>'already_cancelled', 'detail'=>'La reserva ya fue cancelada']);
+            return;
+        }
+        
         $ok = $res->delete(intval($id));
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo eliminar reserva']);
     }
