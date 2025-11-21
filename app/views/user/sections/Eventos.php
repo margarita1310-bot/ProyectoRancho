@@ -6,7 +6,7 @@
         
         <div id="eventos-container" class="row g-3">
             <!-- Los eventos se cargarán dinámicamente aquí -->
-            <p class="text-center">Cargando eventos...</p>
+            <p class="text-center w-100">Cargando eventos...</p>
         </div>
     </div>
 

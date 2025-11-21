@@ -49,9 +49,12 @@ class DisponibilidadController {
         $fecha = $_POST['fecha'] ?? null;
         $cantidad = $_POST['cantidad'] ?? null;
         
+        // Debug: log de los datos recibidos
+        error_log("Datos recibidos - Fecha: $fecha, Cantidad: $cantidad");
+        
         if (!$fecha || !$cantidad || !ctype_digit(strval($cantidad))) { 
             http_response_code(400); 
-            echo json_encode(['status'=>'error','message'=>'invalid_input']); 
+            echo json_encode(['status'=>'error','message'=>'invalid_input', 'detail'=>'Fecha o cantidad inválida']); 
             return; 
         }
         
@@ -64,8 +67,19 @@ class DisponibilidadController {
             return;
         }
         
-        $ok = $m->create($fecha, intval($cantidad));
-        echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'db_error']);
+        try {
+            $ok = $m->create($fecha, intval($cantidad));
+            if ($ok) {
+                echo json_encode(['status'=>'ok', 'message'=>'Disponibilidad guardada correctamente']);
+            } else {
+                http_response_code(500);
+                echo json_encode(['status'=>'error','message'=>'db_error', 'detail'=>'No se pudo guardar en la base de datos']);
+            }
+        } catch (Exception $e) {
+            error_log("Error al guardar disponibilidad: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['status'=>'error','message'=>'exception', 'detail'=>$e->getMessage()]);
+        }
     }
 
      /*
@@ -134,6 +148,20 @@ class DisponibilidadController {
         $m = new DisponibilidadModel();
         $ok = $m->delete(intval($id));
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'db_error']);
+    }
+
+     /*
+     * listarTodas()
+     * 
+     * Retorna todas las disponibilidades con indicador de reservas.
+     * 
+     * @return void - Retorna JSON
+     */
+    public function listarTodas() {
+        header('Content-Type: application/json; charset=utf-8');
+        $m = new DisponibilidadModel();
+        $disponibilidades = $m->getAllWithReservationCheck();
+        echo json_encode($disponibilidades);
     }
 }
 

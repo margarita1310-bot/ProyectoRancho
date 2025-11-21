@@ -1,5 +1,5 @@
 <!--Sección de redes sociales-->
-<section id="nosotros" class="nosostros">
+<section id="nosotros" class="nosotros">
     <!--Links a redes-->
     <div class="side-left">
         <h1>Síguenos</h1>

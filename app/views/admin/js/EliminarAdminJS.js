@@ -64,21 +64,51 @@ if (btnConfirmarEliminar) {
         const data = new FormData();
         data.append('id', id);
 
-        fetch(`${controller}Controller.php?action=${action}`, {
+        console.log('Eliminando:', { id, controller, action });
+        console.log('URL:', `../../../../app/controllers/${controller}Controller.php?action=${action}`);
+
+        fetch(`../../../../app/controllers/${controller}Controller.php?action=${action}`, {
             method: 'POST',
             headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: data
         })
-        .then(parseResponse)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.text().then(text => {
+                console.log('Response text:', text);
+                try {
+                    return JSON.parse(text);
+                } catch (e) {
+                    console.error('Error parsing JSON:', e);
+                    console.error('Raw response:', text);
+                    throw new Error('Respuesta no válida del servidor');
+                }
+            });
+        })
         .then(resp => {
             cerrarEliminar();
-            if (resp && resp.status === 'ok') location.reload();
-            else showToast('error', 'Error al eliminar: ' + (resp.message || JSON.stringify(resp)));
+            if (resp && resp.status === 'ok') {
+                showToast('success', 'Elemento eliminado correctamente');
+                
+                // Recargar tabla específica según el controlador
+                if (controller === 'Producto' && typeof cargarProductos === 'function') {
+                    cargarProductos();
+                } else if (controller === 'Promocion' && typeof cargarPromociones === 'function') {
+                    cargarPromociones();
+                } else if (controller === 'Evento' && typeof cargarEventos === 'function') {
+                    cargarEventos();
+                } else {
+                    // Fallback para otros controladores
+                    setTimeout(() => location.reload(), 1000);
+                }
+            } else {
+                showToast('error', resp.message || 'Error al eliminar');
+            }
         })
         .catch(err => {
-            console.error(err);
-            showToast('error', 'Ocurrió un error al eliminar.');
             cerrarEliminar();
+            console.error(err);
+            showToast('error', err.message || 'Ocurrió un error al eliminar.');
         });
     });
 }

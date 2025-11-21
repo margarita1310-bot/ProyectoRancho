@@ -33,12 +33,21 @@ class PromocionController {
 	 /*
 	 * index()
 	 * Muestra la lista completa de promociones.
-	 * @return void - Incluye vista PromocionView.php
+	 * @return void - Incluye vista PromocionView.php o retorna JSON si es AJAX
 	 */
 	public function index() {
 		$prom = new PromocionModel();
 		$promocion = $prom->getAll();
-		require_once __DIR__ . '/../../app/views/admin/PromocionAdmin.php';
+		
+		// Si es petición AJAX, devolver JSON
+		if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+			header('Content-Type: application/json; charset=utf-8');
+			echo json_encode($promocion);
+			return;
+		}
+		
+		// Si no es AJAX, mostrar vista completa
+		require_once __DIR__ . '/../views/admin/DashboardAdmin.php';
 	}
 
 	 /*

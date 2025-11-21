@@ -2,7 +2,7 @@
 async function getMesas(fecha) {
     try {
         if (!fecha) fecha = new Date().toISOString().slice(0,10);
-        const res = await fetch(`../../app/controllers/DisponibilidadController.php?action=listar&fecha=${fecha}`, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
+        const res = await fetch(`/app/controllers/DisponibilidadController.php?action=listar&fecha=${fecha}`, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } });
         const data = await parseResponse(res);
         if (!data) return [];
         const cantidad = data.cantidad ?? data.cantidad_mesas ?? data.cantidad_mesas ?? data.cantidad;
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const hoy = new Date().toISOString().slice(0,10);
     window.reservasHoy = [];
-    fetch(`../../app/controllers/ReservaController.php?action=listar&fecha=${hoy}`, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+    fetch(`/app/controllers/ReservaController.php?action=listar&fecha=${hoy}`, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
         .then(parseResponse)
         .then(data => { window.reservasHoy = data || []; renderMesas(); })
         .catch(err => { console.error('No se pudieron cargar reservas:', err); renderMesas(); });
@@ -117,13 +117,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (fecha !== hoy) return showToast('warning','Solo puedes agregar o actualizar la disponibilidad para hoy.');
 
         let data = new FormData(); data.append('fecha', fecha); data.append('cantidad', cantidad);
-        fetch('../../app/controllers/DisponibilidadController.php?action=guardar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
+        fetch('/app/controllers/DisponibilidadController.php?action=guardar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
             .then(parseResponse)
             .then(resp => {
                 if (resp && resp.status === 'ok') {
                     const modal = document.getElementById('modal-create-mesas');
                     if (modal) { modal.classList.remove('active'); modal.classList.add('d-none'); }
-                    return fetch(`../../app/controllers/ReservaController.php?action=listar&fecha=${hoy}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+                    return fetch(`/app/controllers/ReservaController.php?action=listar&fecha=${hoy}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
                         .then(parseResponse).then(d=>{ window.reservasHoy = d||[]; renderMesas(); });
                 } else {
                         showToast('error','Error al guardar disponibilidad: ' + (resp.message || JSON.stringify(resp)));
@@ -139,7 +139,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.classList.contains('btn-edit-mesas')) {
             const date = target.dataset.date;
             try {
-                const res = await fetch(`../../app/controllers/DisponibilidadController.php?action=listar&fecha=${date}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const res = await fetch(`/app/controllers/DisponibilidadController.php?action=listar&fecha=${date}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                 const item = await parseResponse(res);
                 if (!item) return showToast('error','Registro no encontrado');
                 const modal = document.getElementById('modal-create-mesas');
@@ -154,14 +154,14 @@ document.addEventListener('DOMContentLoaded', () => {
         if (target.classList.contains('btn-delete-mesas')) {
             const date = target.dataset.date;
             try {
-                const res = await fetch(`../../app/controllers/DisponibilidadController.php?action=listar&fecha=${date}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                const res = await fetch(`/app/controllers/DisponibilidadController.php?action=listar&fecha=${date}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                 const item = await parseResponse(res);
                 if (!item || !item.id) return showToast('warning','No hay registro para eliminar');
                 let data = new FormData(); data.append('id', item.id);
-                const del = await fetch('../../app/controllers/DisponibilidadController.php?action=eliminar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data });
+                const del = await fetch('/app/controllers/DisponibilidadController.php?action=eliminar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data });
                 const resp = await parseResponse(del);
                 if (resp && resp.status === 'ok') {
-                    const r = await fetch(`../../app/controllers/ReservaController.php?action=listar&fecha=${hoy}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    const r = await fetch(`/app/controllers/ReservaController.php?action=listar&fecha=${hoy}`, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
                     window.reservasHoy = await parseResponse(r);
                     renderMesas();
                 } else showToast('error','Error al eliminar: ' + (resp.message || JSON.stringify(resp)));
@@ -173,9 +173,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const mesa = target.dataset.mesa;
             if (!id) return showToast('error','ID de reserva no encontrado');
             let data = new FormData(); data.append('id', id); data.append('mesa', mesa);
-            fetch('../../app/controllers/ReservaController.php?action=confirmar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
+            fetch('/app/controllers/ReservaController.php?action=confirmar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
                 .then(parseResponse)
-                .then(resp => { if (resp && resp.status === 'ok') { fetch(`../../app/controllers/ReservaController.php?action=listar&fecha=${new Date().toISOString().slice(0,10)}`).then(parseResponse).then(d=>{window.reservasHoy=d||[]; renderMesas();}); } else showToast('error','Error al asignar: '+(resp.message||JSON.stringify(resp))); })
+                .then(resp => { if (resp && resp.status === 'ok') { fetch(`/app/controllers/ReservaController.php?action=listar&fecha=${new Date().toISOString().slice(0,10)}`).then(parseResponse).then(d=>{window.reservasHoy=d||[]; renderMesas();}); } else showToast('error','Error al asignar: '+(resp.message||JSON.stringify(resp))); })
                 .catch(err => { console.error(err); showToast('error','Error de red al asignar reserva'); });
         }
 
@@ -183,9 +183,9 @@ document.addEventListener('DOMContentLoaded', () => {
             const id = target.dataset.id;
             if (!id) return showToast('error','ID de reserva no encontrado');
             let data = new FormData(); data.append('id', id);
-            fetch('../../app/controllers/ReservaController.php?action=confirmar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
+            fetch('/app/controllers/ReservaController.php?action=confirmar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
                 .then(parseResponse)
-                .then(resp => { if (resp && resp.status === 'ok') { fetch(`../../app/controllers/ReservaController.php?action=listar&fecha=${new Date().toISOString().slice(0,10)}`).then(parseResponse).then(d=>{window.reservasHoy=d||[]; renderMesas();}); } else showToast('error','Error al confirmar: '+(resp.message||JSON.stringify(resp))); })
+                .then(resp => { if (resp && resp.status === 'ok') { fetch(`/app/controllers/ReservaController.php?action=listar&fecha=${new Date().toISOString().slice(0,10)}`).then(parseResponse).then(d=>{window.reservasHoy=d||[]; renderMesas();}); } else showToast('error','Error al confirmar: '+(resp.message||JSON.stringify(resp))); })
                 .catch(err => { console.error(err); showToast('error','Error de red al confirmar reserva'); });
         }
 

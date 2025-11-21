@@ -155,5 +155,170 @@ class ReservaModel {
             return false;
         }
     }
+
+     /*
+     * getMesasActivasYDisponibles($fecha)
+     * 
+     * Obtiene las mesas disponibles para una fecha específica según la nueva lógica:
+     * 1. Consulta la cantidad de mesas permitidas desde 'disponibilidad'
+     * 2. Obtiene las primeras N mesas activas del catálogo 'mesa'
+     * 3. Filtra las que ya están reservadas para esa fecha
+     * 4. Retorna la lista de mesas libres
+     * 
+     * @param string $fecha - Fecha en formato YYYY-MM-DD
+     * @return array - Array de mesas disponibles (id_mesa, numero, capacidad)
+     */
+    public function getMesasActivasYDisponibles($fecha) {
+        $db = Conexion::conectar();
+        
+        try {
+            // Paso 1: Obtener cantidad de mesas permitidas para la fecha
+            error_log("[getMesasActivasYDisponibles] Consultando disponibilidad para fecha: $fecha");
+            
+            require_once 'DisponibilidadModel.php';
+            $dispModel = new DisponibilidadModel();
+            $disponibilidad = $dispModel->getByDate($fecha);
+            
+            if (!$disponibilidad || !isset($disponibilidad['cantidad'])) {
+                error_log("[getMesasActivasYDisponibles] No hay disponibilidad configurada para $fecha");
+                return []; // No hay disponibilidad configurada para esta fecha
+            }
+            
+            $cantidadPermitida = (int)$disponibilidad['cantidad'];
+            error_log("[getMesasActivasYDisponibles] Cantidad permitida: $cantidadPermitida");
+            
+            // Paso 2: Obtener las primeras N mesas activas del catálogo
+            // IMPORTANTE: Convertir $cantidadPermitida a int para evitar problemas con LIMIT
+            $sql = "SELECT id_mesa, numero 
+                    FROM mesa 
+                    WHERE activa = 1 
+                    ORDER BY numero ASC 
+                    LIMIT " . (int)$cantidadPermitida;
+            $stmt = $db->query($sql);
+            $mesasActivas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            error_log("[getMesasActivasYDisponibles] Mesas activas encontradas: " . count($mesasActivas));
+            
+            if (empty($mesasActivas)) {
+                error_log("[getMesasActivasYDisponibles] No hay mesas activas en el catálogo");
+                return []; // No hay mesas activas en el catálogo
+            }
+            
+            // Paso 3: Obtener IDs de mesas ya reservadas para esa fecha
+            $sql = "SELECT id_mesa 
+                    FROM reserva 
+                    WHERE fecha = ? 
+                    AND estado IN ('pendiente', 'confirmada') 
+                    AND id_mesa IS NOT NULL";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$fecha]);
+            $mesasReservadas = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            
+            error_log("[getMesasActivasYDisponibles] Mesas ya reservadas: " . count($mesasReservadas));
+            
+            // Paso 4: Filtrar las mesas ocupadas
+            $mesasDisponibles = array_filter($mesasActivas, function($mesa) use ($mesasReservadas) {
+                return !in_array($mesa['id_mesa'], $mesasReservadas);
+            });
+            
+            $resultado = array_values($mesasDisponibles); // Reindexar array
+            error_log("[getMesasActivasYDisponibles] Mesas disponibles finales: " . count($resultado));
+            
+            return $resultado;
+        } catch (Exception $e) {
+            error_log("[getMesasActivasYDisponibles] Error: " . $e->getMessage());
+            throw $e;
+        }
+    }
+
+     /*
+     * getReservasPorFechaConMesas($fecha)
+     * 
+     * Obtiene todas las mesas disponibles para una fecha específica
+     * y las combina con las reservas existentes.
+     * Retorna un array donde cada fila representa una mesa, con o sin reserva.
+     * 
+     * @param string $fecha - Fecha en formato YYYY-MM-DD
+     * @return array - Array de mesas con información de reserva (si existe)
+     */
+    public function getReservasPorFechaConMesas($fecha) {
+        $db = Conexion::conectar();
+        
+        try {
+            // Paso 1: Obtener disponibilidad para la fecha
+            require_once 'DisponibilidadModel.php';
+            $dispModel = new DisponibilidadModel();
+            $disponibilidad = $dispModel->getByDate($fecha);
+            
+            if (!$disponibilidad || !isset($disponibilidad['cantidad'])) {
+                return ['disponibilidad' => false, 'mesas' => []];
+            }
+            
+            $cantidadPermitida = (int)$disponibilidad['cantidad'];
+            
+            // Paso 2: Obtener las primeras N mesas activas
+            $sql = "SELECT id_mesa, numero 
+                    FROM mesa 
+                    WHERE activa = 1 
+                    ORDER BY numero ASC 
+                    LIMIT " . (int)$cantidadPermitida;
+            $stmt = $db->query($sql);
+            $mesasActivas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            if (empty($mesasActivas)) {
+                return ['disponibilidad' => true, 'mesas' => []];
+            }
+            
+            // Paso 3: Obtener reservas para esa fecha
+            $sql = "SELECT r.*, c.nombre as cliente_nombre
+                    FROM reserva r
+                    LEFT JOIN cliente c ON r.id_cliente = c.id_cliente
+                    WHERE r.fecha = ? 
+                    AND r.id_mesa IS NOT NULL";
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$fecha]);
+            $reservas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Crear un mapa de reservas por id_mesa
+            $reservasPorMesa = [];
+            foreach ($reservas as $reserva) {
+                $reservasPorMesa[$reserva['id_mesa']] = $reserva;
+            }
+            
+            // Paso 4: Combinar mesas con reservas
+            $resultado = [];
+            foreach ($mesasActivas as $mesa) {
+                $fila = [
+                    'id_mesa' => $mesa['id_mesa'],
+                    'numero_mesa' => $mesa['numero'],
+                    'tiene_reserva' => isset($reservasPorMesa[$mesa['id_mesa']]),
+                    'id_reserva' => null,
+                    'folio' => '-',
+                    'cliente_nombre' => '-',
+                    'hora' => '-',
+                    'num_personas' => '-',
+                    'estado' => null
+                ];
+                
+                // Si hay reserva para esta mesa, agregar los datos
+                if (isset($reservasPorMesa[$mesa['id_mesa']])) {
+                    $reserva = $reservasPorMesa[$mesa['id_mesa']];
+                    $fila['id_reserva'] = $reserva['id_reserva'];
+                    $fila['folio'] = $reserva['folio'] ?? '-';
+                    $fila['cliente_nombre'] = $reserva['cliente_nombre'] ?? '-';
+                    $fila['hora'] = $reserva['hora'] ?? '-';
+                    $fila['num_personas'] = $reserva['num_personas'] ?? '-';
+                    $fila['estado'] = $reserva['estado'];
+                }
+                
+                $resultado[] = $fila;
+            }
+            
+            return ['disponibilidad' => true, 'mesas' => $resultado];
+        } catch (Exception $e) {
+            error_log("[getReservasPorFechaConMesas] Error: " . $e->getMessage());
+            throw $e;
+        }
+    }
 }
 ?>

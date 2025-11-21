@@ -33,12 +33,21 @@ class EventoController {
 	 /*
 	 * index()
 	 * Muestra lista de eventos.
-	 * @return void - Incluye vista EventoView.php
+	 * @return void - Incluye vista EventoView.php o retorna JSON si es AJAX
 	 */
 	public function index() {
 		$ev = new EventoModel();
 		$evento = $ev->getAll();
-		require_once __DIR__ . '/../../app/views/admin/EventoAdmin.php';
+		
+		// Si es petición AJAX, devolver JSON
+		if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+			header('Content-Type: application/json; charset=utf-8');
+			echo json_encode($evento);
+			return;
+		}
+		
+		// Si no es AJAX, mostrar vista completa
+		require_once __DIR__ . '/../views/admin/DashboardAdmin.php';
 	}
 
 	/**
@@ -167,17 +176,37 @@ class EventoController {
 	public function eliminar() {
 		header('Content-Type: application/json; charset=utf-8');
 		$id = $_POST['id'] ?? null;
-		if (!$id || !ctype_digit($id)) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'missing_id']); return; }
+		if (!$id || !ctype_digit($id)) { 
+			http_response_code(400); 
+			echo json_encode(['status'=>'error','message'=>'missing_id']); 
+			return; 
+		}
+		
 		$ev = new EventoModel();
 		// Antes de eliminar, obtener imagen para borrarla del filesystem
 		$existing = $ev->getById(intval($id));
 		$oldImagen = $existing['imagen'] ?? null;
-		$ok = $ev->delete(intval($id));
-		if ($ok && $oldImagen) {
-			$oldPath = __DIR__ . '/../../public/images/evento/' . $oldImagen;
-			if (is_file($oldPath)) @unlink($oldPath);
+		
+		try {
+			$ok = $ev->delete(intval($id));
+			if ($ok && $oldImagen) {
+				$oldPath = __DIR__ . '/../../public/images/evento/' . $oldImagen;
+				if (is_file($oldPath)) @unlink($oldPath);
+			}
+			echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo eliminar evento']);
+		} catch (PDOException $e) {
+			// Verificar si es un error de clave foránea
+			if ($e->getCode() == '23000') {
+				http_response_code(400);
+				echo json_encode([
+					'status' => 'error',
+					'message' => 'No se puede eliminar el evento porque tiene reservas asociadas. Elimina primero las reservas.'
+				]);
+			} else {
+				http_response_code(500);
+				echo json_encode(['status'=>'error','message'=>'Error al eliminar: ' . $e->getMessage()]);
+			}
 		}
-		echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo eliminar evento']);
 	}
 }
 

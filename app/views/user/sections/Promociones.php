@@ -9,9 +9,9 @@
             <br>Consulta nuestras redes sociales para conocer las ofertas vigentes.
         </p>
         
-        <div id="promociones-container">
+        <div id="promociones-container" class="row g-3">
             <!-- Las promociones se cargarán dinámicamente aquí -->
-            <p class="text-center">Cargando promociones...</p>
+            <p class="text-center w-100">Cargando promociones...</p>
         </div>
     </div>
 </section>

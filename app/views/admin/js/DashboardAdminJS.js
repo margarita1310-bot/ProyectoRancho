@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 async function cargarEstadisticas() {
     try {
-        const response = await fetch('../../app/controllers/AdminController.php?action=getEstadisticas', {
+        const response = await fetch('../../../../app/controllers/AdminController.php?action=getEstadisticas', {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }

@@ -80,26 +80,31 @@ class DisponibilidadModel {
             $existing = $stmt->fetch(PDO::FETCH_ASSOC);
             
             if ($existing) {
+                error_log("Actualizando disponibilidad existente para fecha: $fecha");
                 $sql = "UPDATE mesas_disponibilidad SET cantidad = ? WHERE id = ?";
                 $stmt = $db->prepare($sql);
                 $stmt->execute([$cantidad, $existing['id']]);
             } else {
+                error_log("Creando nueva disponibilidad para fecha: $fecha");
                 $sql = "INSERT INTO mesas_disponibilidad (fecha, cantidad) VALUES (?, ?)";
                 $stmt = $db->prepare($sql);
                 $stmt->execute([$fecha, $cantidad]);
             }
             
             // Activar mesas correspondientes
+            error_log("Activando $cantidad mesas");
             $mesaModel = new MesaModel();
             $mesaModel->activarMesas($cantidad);
             
             $db->commit();
+            error_log("Disponibilidad guardada exitosamente");
             return true;
         } catch (Exception $e) {
+            error_log("Error en DisponibilidadModel::create - " . $e->getMessage());
             if ($db->inTransaction()) {
                 $db->rollBack();
             }
-            return false;
+            throw $e; // Re-lanzar la excepción para que sea capturada en el controlador
         }
     }
 
@@ -169,6 +174,33 @@ class DisponibilidadModel {
         $sql = "DELETE FROM mesas_disponibilidad WHERE id = ?";
         $stmt = $db->prepare($sql);
         return $stmt->execute([$id]);
+    }
+
+    /**
+     * getAllWithReservationCheck()
+     * 
+     * Obtiene todas las disponibilidades e incluye un indicador
+     * que muestra si cada una tiene reservas asociadas.
+     * 
+     * @return array - Array de disponibilidades con campo 'tiene_reservas'
+     */
+    public function getAllWithReservationCheck() {
+        $db = Conexion::conectar();
+        $sql = "SELECT d.*, 
+                       (SELECT COUNT(*) FROM reserva r 
+                        WHERE r.fecha = d.fecha 
+                        AND r.estado IN ('pendiente', 'confirmada')) as tiene_reservas
+                FROM mesas_disponibilidad d
+                ORDER BY d.fecha DESC";
+        $stmt = $db->query($sql);
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Convertir tiene_reservas a booleano
+        foreach ($results as &$row) {
+            $row['tiene_reservas'] = (int)$row['tiene_reservas'] > 0;
+        }
+        
+        return $results;
     }
 }
 ?>

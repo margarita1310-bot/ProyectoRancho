@@ -45,7 +45,7 @@ class AdminController {
         $mesaModel = new MesaModel();
         $mesas = $mesaModel->getMesasActivas();
 
-        include '../../app/views/admin/DashboardAdmin.php';
+        include __DIR__ . '/../views/admin/DashboardAdmin.php';
     }
 
      /*
@@ -65,32 +65,32 @@ class AdminController {
         require_once __DIR__ . '/../models/MesaModel.php';
         
         try {
-            // Contar promociones activas
+            // Contar promociones disponibles
             $promModel = new PromocionModel();
             $promociones = $promModel->getAll();
             $promosActivas = count(array_filter($promociones, function($p) {
-                return $p['activa'] == 1;
+                return isset($p['estado']) && $p['estado'] === 'Disponible';
             }));
             
             // Contar eventos próximos (desde hoy en adelante)
             $evModel = new EventoModel();
             $eventos = $evModel->getAll();
             $eventosProximos = count(array_filter($eventos, function($e) {
-                return strtotime($e['fecha']) >= strtotime(date('Y-m-d'));
+                return isset($e['fecha']) && strtotime($e['fecha']) >= strtotime(date('Y-m-d'));
             }));
             
             // Contar reservas pendientes
             $reservaModel = new ReservaModel();
             $reservas = $reservaModel->getAll();
             $reservasPendientes = count(array_filter($reservas, function($r) {
-                return $r['estado'] === 'pendiente';
+                return isset($r['estado']) && strtolower($r['estado']) === 'pendiente';
             }));
             
             // Contar mesas disponibles
             $mesaModel = new MesaModel();
             $mesas = $mesaModel->getMesasActivas();
             $mesasDisponibles = count(array_filter($mesas, function($m) {
-                return $m['estado'] === 'Disponible';
+                return isset($m['estado']) && $m['estado'] === 'Disponible';
             }));
             
             echo json_encode([

@@ -34,7 +34,7 @@ class ReservaController {
         // Cargar vista de reservas (dashboard incluirá esta vista)
         $resModel = new Reserva();
         $reserva = $resModel->getAll();
-        require_once __DIR__ . '/../../app/views/admin/ReservaAdmin.php';
+        require_once __DIR__ . '/../views/admin/DashboardAdmin.php';
     }
 
      /*
@@ -174,6 +174,73 @@ class ReservaController {
         
         $ok = $res->delete(intval($id));
         echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo eliminar reserva']);
+    }
+
+     /*
+     * obtenerMesasDisponiblesPorFecha()
+     * 
+     * Endpoint para obtener las mesas disponibles para una fecha específica.
+     * Implementa la nueva lógica de disponibilidad dinámica.
+     * 
+     * @return void - Retorna JSON con array de mesas disponibles
+     */
+    public function obtenerMesasDisponiblesPorFecha() {
+        header('Content-Type: application/json; charset=utf-8');
+        
+        try {
+            $fecha = $_GET['fecha'] ?? null;
+            
+            if (!$fecha) {
+                http_response_code(400);
+                echo json_encode(['status'=>'error','message'=>'missing_fecha']);
+                return;
+            }
+            
+            error_log("Obteniendo mesas disponibles para fecha: $fecha");
+            
+            $res = new ReservaModel();
+            $mesasDisponibles = $res->getMesasActivasYDisponibles($fecha);
+            
+            error_log("Mesas disponibles encontradas: " . count($mesasDisponibles));
+            
+            echo json_encode($mesasDisponibles);
+        } catch (Exception $e) {
+            error_log("Error en obtenerMesasDisponiblesPorFecha: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['status'=>'error','message'=>'exception', 'detail'=>$e->getMessage()]);
+        }
+    }
+
+     /*
+     * obtenerReservasPorFecha()
+     * 
+     * Endpoint para obtener todas las mesas con sus reservas para una fecha específica.
+     * 
+     * @return void - Retorna JSON
+     */
+    public function obtenerReservasPorFecha() {
+        header('Content-Type: application/json; charset=utf-8');
+        
+        try {
+            $fecha = $_GET['fecha'] ?? null;
+            
+            if (!$fecha) {
+                http_response_code(400);
+                echo json_encode(['status'=>'error','message'=>'missing_fecha']);
+                return;
+            }
+            
+            error_log("Obteniendo reservas para fecha: $fecha");
+            
+            $res = new ReservaModel();
+            $resultado = $res->getReservasPorFechaConMesas($fecha);
+            
+            echo json_encode($resultado);
+        } catch (Exception $e) {
+            error_log("Error en obtenerReservasPorFecha: " . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['status'=>'error','message'=>'exception', 'detail'=>$e->getMessage()]);
+        }
     }
 }
 

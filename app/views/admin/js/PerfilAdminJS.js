@@ -8,7 +8,7 @@
 // Abrir modal de perfil
 async function abrirModalPerfil() {
     try {
-        const response = await fetch('../../app/controllers/AdminController.php?action=getPerfil', {
+        const response = await fetch('/app/controllers/AdminController.php?action=getPerfil', {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
 
@@ -26,11 +26,11 @@ async function abrirModalPerfil() {
             modal.classList.remove('d-none');
             modal.classList.add('active');
         } else {
-            showToast('Error', 'No se pudo cargar el perfil', 'danger');
+            showToast('error', 'No se pudo cargar el perfil');
         }
     } catch (error) {
         console.error('Error cargando perfil:', error);
-        showToast('Error', 'Error al cargar el perfil', 'danger');
+        showToast('error', 'Error al cargar el perfil');
     }
 }
 
