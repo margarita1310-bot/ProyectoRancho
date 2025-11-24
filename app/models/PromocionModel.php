@@ -5,13 +5,13 @@
  * Modelo para gestionar promociones con soporte opcional para imágenes.
  * Maneja CRUD: create, read, update, delete.
  * 
- * Tabla: promocion (id_promocion, nombre, descripcion, fecha_inicio, fecha_fin, estado, imagen)
+ * Tabla: promocion (id_promocion, nombre, descripcion, fecha_inicio, fecha_fin, estado)
  * 
  * Métodos:
  * - getAll(): Retorna todas las promociones
- * - create(..., $imagen): Crea nueva promoción (imagen es parámetro variádico opcional)
+ * - create($nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado)
  * - getById($id): Obtiene una promoción por ID
- * - update(..., $imagen): Actualiza promoción (imagen opcional)
+ * - update($id, $nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado)
  * - delete($id): Elimina una promoción
  */
 
@@ -31,31 +31,26 @@ class PromocionModel {
     }
 
      /*
-     * create($nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado[, $imagen])
+    * create($nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado)
      * 
-     * Crea nueva promoción. La imagen es parámetro variádico (6to parámetro, OPCIONAL).
+    * Crea nueva promoción. (La imagen se gestiona por filesystem, no en BD).
      * 
      * @param string $nombre - Nombre de la promoción
      * @param string $descripcion - Descripción
      * @param string $fecha_inicio - Fecha inicio (YYYY-MM-DD)
      * @param string $fecha_fin - Fecha fin (YYYY-MM-DD)
      * @param string $estado - 'activo' o 'inactivo'
-     * @param string|null $imagen - (Opcional) Nombre del archivo de imagen
-     * @return bool - true si se insertó, false si hubo error
+     * @return int|false - ID insertado si se insertó, false si hubo error
      */
     public function create($nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado) {
         $db = Conexion::conectar();
-        $args = [$nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado];
-        if (func_num_args() >= 6) {
-            $imagen = func_get_arg(5);
-            $sql = "INSERT INTO promocion (nombre, descripcion, fecha_inicio, fecha_fin, estado, imagen) VALUES (?, ?, ?, ?, ?, ?)";
-            $stmt = $db->prepare($sql);
-            $args[] = $imagen;
-        } else {
-            $sql = "INSERT INTO promocion (nombre, descripcion, fecha_inicio, fecha_fin, estado) VALUES (?, ?, ?, ?, ?)";
-            $stmt = $db->prepare($sql);
+        $sql = "INSERT INTO promocion (nombre, descripcion, fecha_inicio, fecha_fin, estado) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        $ok = $stmt->execute([$nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado]);
+        if ($ok) {
+            return (int)$db->lastInsertId();
         }
-        return $stmt->execute($args);
+        return false;
     }
 
      /*
@@ -73,9 +68,9 @@ class PromocionModel {
     }
 
      /*
-     * update($id, $nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado[, $imagen])
+    * update($id, $nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado)
      * 
-     * Actualiza una promoción. La imagen es parámetro variádico (7mo parámetro opcional).
+    * Actualiza una promoción. (La imagen se gestiona por filesystem, no en BD).
      * 
      * @param int $id - ID de la promoción
      * @param string $nombre - Nuevo nombre
@@ -83,19 +78,10 @@ class PromocionModel {
      * @param string $fecha_inicio - Nueva fecha inicio
      * @param string $fecha_fin - Nueva fecha fin
      * @param string $estado - Nuevo estado
-     * @param string|null $imagen - (Opcional) Nuevo nombre de imagen
      * @return bool - true si se actualizó, false si hubo error
      */
     public function update($id, $nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado) {
         $db = Conexion::conectar();
-        if (func_num_args() >= 7) {
-            $imagen = func_get_arg(6);
-            if ($imagen) {
-                $sql = "UPDATE promocion SET nombre=?, descripcion=?, fecha_inicio=?, fecha_fin=?, estado=?, imagen=? WHERE id_promocion=?";
-                $stmt = $db->prepare($sql);
-                return $stmt->execute([$nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado, $imagen, $id]);
-            }
-        }
         $sql = "UPDATE promocion SET nombre=?, descripcion=?, fecha_inicio=?, fecha_fin=?, estado=? WHERE id_promocion=?";
         $stmt = $db->prepare($sql);
         return $stmt->execute([$nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado, $id]);

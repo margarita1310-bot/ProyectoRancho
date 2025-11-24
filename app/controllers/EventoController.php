@@ -12,7 +12,7 @@
  * - actualizar: POST - Actualiza un evento (multipart/form-data con imagen opcional)
  * - eliminar: POST - Elimina un evento y su imagen (JSON)
  * 
- * Tabla de base de datos: evento (id_evento, nombre, descripcion, fecha, hora_inicio, hora_fin, imagen)
+ * Tabla de base de datos: evento (id_evento, nombre, descripcion, fecha, hora_inicio, hora_fin)
  * 
  * Requiere: Autenticación de administrador (ensureAdmin())
  * 
@@ -20,8 +20,8 @@
  * - Opcional en crear y actualizar
  * - Máximo 2MB
  * - Tipos permitidos: JPEG, PNG (validados por MIME type)
- * - Nombres únicos: {timestamp}_{random6bytes}.{ext}
- * - Directorio: public/images/eventos/
+ * - Nombre por ID: {id_evento}.{ext}
+ * - Directorio: public/images/evento/
  */
 
 require_once __DIR__ . '/../models/EventoModel.php';
@@ -72,8 +72,12 @@ class EventoController {
 
 		if (!empty($errors)) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>$errors]); return; }
 
-		// Procesar imagen si se subió (opcional)
-		$imagenNombre = null;
+		// Crear evento (sin imagen en BD)
+		$ev = new EventoModel();
+		$newId = $ev->create($nombre, $descripcion, $fecha, $hora_inicio, $hora_fin);
+		if ($newId === false) { http_response_code(500); echo json_encode(['status'=>'error','message'=>'no se pudo crear evento']); return; }
+
+		// Procesar imagen si se subió (opcional) y guardarla como {id}.{ext}
 		if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
 			$maxSize = 2 * 1024 * 1024;
 			$allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
@@ -85,16 +89,14 @@ class EventoController {
 			$ext = $allowed[$mime];
 			$uploadDir = __DIR__ . '/../../public/images/evento/';
 			if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-			$imagenNombre = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
-			$dest = $uploadDir . $imagenNombre;
+			// Eliminar cualquier imagen previa por seguridad (no debería existir en create)
+			foreach (['jpg','png'] as $e) { $p = $uploadDir . $newId . '.' . $e; if (is_file($p)) @unlink($p); }
+			$dest = $uploadDir . $newId . '.' . $ext;
 			if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $dest)) { http_response_code(500); echo json_encode(['status'=>'error','message'=>'upload_failed']); return; }
 		}
 
-		// Crear evento
-		$ev = new EventoModel();
-		$ok = $ev->create($nombre, $descripcion, $fecha, $hora_inicio, $hora_fin, $imagenNombre);
 		header('Content-Type: application/json; charset=utf-8');
-		echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo crear evento']);
+		echo json_encode(['status'=>'ok', 'id_evento' => $newId]);
 	}
 
 	 /*
@@ -135,9 +137,12 @@ class EventoController {
 
 		if (!empty($errors)) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>$errors]); return; }
 
-		// Procesar imagen si se subió (opcional)
-		$imagenNombre = null;
-		if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+		// Actualizar evento (sin imagen en BD)
+		$ev = new EventoModel();
+		$ok = $ev->update($id, $nombre, $descripcion, $fecha, $hora_inicio, $hora_fin);
+
+		// Si se subió una nueva imagen, guardarla como {id}.{ext} y eliminar otras extensiones
+		if ($ok && isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
 			$maxSize = 2 * 1024 * 1024;
 			$allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
 			if ($_FILES['imagen']['size'] > $maxSize) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>['imagen_too_large']]); return; }
@@ -148,21 +153,9 @@ class EventoController {
 			$ext = $allowed[$mime];
 			$uploadDir = __DIR__ . '/../../public/images/evento/';
 			if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-			$imagenNombre = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
-			$dest = $uploadDir . $imagenNombre;
+			foreach (['jpg','png'] as $e) { $p = $uploadDir . $id . '.' . $e; if (is_file($p)) @unlink($p); }
+			$dest = $uploadDir . $id . '.' . $ext;
 			if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $dest)) { http_response_code(500); echo json_encode(['status'=>'error','message'=>'upload_failed']); return; }
-		}
-
-		// Actualizar evento
-		$ev = new EventoModel();
-		// Obtener anterior imagen (para eliminar si se actualizó)
-		$existing = $ev->getById(intval($id));
-		$oldImagen = $existing['imagen'] ?? null;
-		$ok = $ev->update($id, $nombre, $descripcion, $fecha, $hora_inicio, $hora_fin, $imagenNombre);
-		// Si se actualizó y existía imagen anterior, eliminarla
-		if ($ok && $imagenNombre && $oldImagen) {
-			$oldPath = __DIR__ . '/../../public/images/evento/' . $oldImagen;
-			if (is_file($oldPath)) @unlink($oldPath);
 		}
 		header('Content-Type: application/json; charset=utf-8');
 		echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo actualizar evento']);
@@ -183,15 +176,14 @@ class EventoController {
 		}
 		
 		$ev = new EventoModel();
-		// Antes de eliminar, obtener imagen para borrarla del filesystem
-		$existing = $ev->getById(intval($id));
-		$oldImagen = $existing['imagen'] ?? null;
-		
 		try {
 			$ok = $ev->delete(intval($id));
-			if ($ok && $oldImagen) {
-				$oldPath = __DIR__ . '/../../public/images/evento/' . $oldImagen;
-				if (is_file($oldPath)) @unlink($oldPath);
+			if ($ok) {
+				$dir = __DIR__ . '/../../public/images/evento/';
+				foreach (['jpg','png'] as $e) {
+					$p = $dir . intval($id) . '.' . $e;
+					if (is_file($p)) @unlink($p);
+				}
 			}
 			echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo eliminar evento']);
 		} catch (PDOException $e) {

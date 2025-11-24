@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const formReserva = document.getElementById('form-reserva');
     const inputFecha = document.getElementById('fecha');
     const selectMesa = document.getElementById('id_mesa');
+    const inputHora = document.getElementById('hora');
+    const helpHora = document.getElementById('hora-help');
     
     if (formReserva) {
         formReserva.addEventListener('submit', manejarEnvioReserva);
@@ -17,10 +19,66 @@ document.addEventListener('DOMContentLoaded', () => {
         const hoy = new Date().toISOString().split('T')[0];
         inputFecha.setAttribute('min', hoy);
         
-        // Cargar mesas cuando cambie la fecha
-        inputFecha.addEventListener('change', cargarMesasDisponibles);
+        // Cargar mesas cuando cambie la fecha y aplicar horario
+        inputFecha.addEventListener('change', (e) => { 
+            aplicarHorarioPorDia();
+            cargarMesasDisponibles();
+        });
+        // Si ya hay fecha cargada
+        if (inputFecha.value) aplicarHorarioPorDia();
+    }
+
+    // Inicializar hora deshabilitada si no hay fecha
+    if (inputHora && !inputFecha.value) {
+        inputHora.disabled = true;
+        if (helpHora) helpHora.textContent = 'Selecciona una fecha para ver el horario disponible.';
     }
 });
+
+// Horario por día (0=Domingo ... 6=Sábado)
+const HORARIO_DIA = {
+    0: { abierto: true,  min: '15:00', max: '21:00', label: 'Domingo 3:00 pm - 9:00 pm' },
+    1: { abierto: true,  min: '11:00', max: '22:00', label: 'Lunes 11:00 am - 10:00 pm' },
+    2: { abierto: true,  min: '10:00', max: '22:00', label: 'Martes 10:00 am - 10:00 pm' },
+    3: { abierto: true,  min: '10:30', max: '22:00', label: 'Miércoles 10:30 am - 10:00 pm' },
+    4: { abierto: true,  min: '11:00', max: '23:30', label: 'Jueves 11:00 am - 11:30 pm' },
+    5: { abierto: true,  min: '11:00', max: '22:00', label: 'Viernes 11:00 am - 10:00 pm' },
+    6: { abierto: false, label: 'Sábado cerrado' }
+};
+
+function aplicarHorarioPorDia() {
+    const inputFecha = document.getElementById('fecha');
+    const inputHora = document.getElementById('hora');
+    const help = document.getElementById('hora-help');
+    if (!inputFecha || !inputHora) return;
+
+    inputHora.value = '';
+    const val = inputFecha.value;
+    if (!val) {
+        inputHora.disabled = true;
+        inputHora.removeAttribute('min');
+        inputHora.removeAttribute('max');
+        inputHora.removeAttribute('step');
+        if (help) help.textContent = 'Selecciona una fecha para ver el horario disponible.';
+        return;
+    }
+    const d = new Date(val + 'T00:00:00');
+    const dow = d.getDay();
+    const cfg = HORARIO_DIA[dow];
+    if (!cfg || !cfg.abierto) {
+        inputHora.disabled = true;
+        inputHora.removeAttribute('min');
+        inputHora.removeAttribute('max');
+        inputHora.removeAttribute('step');
+        if (help) help.textContent = cfg && cfg.label ? cfg.label : 'Cerrado';
+        return;
+    }
+    inputHora.disabled = false;
+    inputHora.setAttribute('min', cfg.min);
+    inputHora.setAttribute('max', cfg.max);
+    inputHora.setAttribute('step', '1800'); // 30 minutos
+    if (help) help.textContent = 'Horario disponible: ' + cfg.label;
+}
 
 async function cargarMesasDisponibles() {
     const inputFecha = document.getElementById('fecha');
@@ -116,6 +174,21 @@ async function manejarEnvioReserva(e) {
     // Validación básica
     if (!datos.nombre || !datos.email || !datos.telefono || !datos.personas || !datos.fecha || !datos.hora) {
         mostrarMensaje('Por favor completa todos los campos.', 'error');
+        return;
+    }
+
+    // Validar hora dentro del horario del día
+    const d = new Date(datos.fecha + 'T00:00:00');
+    const dow = d.getDay();
+    const cfg = HORARIO_DIA[dow] || { abierto: false };
+    if (!cfg.abierto) {
+        mostrarMensaje('El lugar está cerrado ese día. Selecciona otra fecha.', 'error');
+        return;
+    }
+    const toMin = (hm) => { const [h,m] = hm.split(':').map(Number); return h*60 + (m||0); };
+    const v = toMin(datos.hora);
+    if (v < toMin(cfg.min) || v > toMin(cfg.max)) {
+        mostrarMensaje(`La hora debe estar entre ${cfg.min} y ${cfg.max} para ese día.`, 'error');
         return;
     }
 

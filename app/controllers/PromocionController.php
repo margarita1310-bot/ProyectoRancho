@@ -12,7 +12,7 @@
  * - actualizar: POST - Actualiza una promoción (multipart/form-data con imagen opcional)
  * - eliminar: POST - Elimina una promoción y su imagen (JSON)
  * 
- * Tabla de base de datos: promocion (id_promocion, nombre, descripcion, fecha_inicio, fecha_fin, estado, imagen)
+ * Tabla de base de datos: promocion (id_promocion, nombre, descripcion, fecha_inicio, fecha_fin, estado)
  * 
  * Requiere: Autenticación de administrador (ensureAdmin())
  * 
@@ -20,7 +20,7 @@
  * - Opcional en crear y actualizar
  * - Máximo 2MB
  * - Tipos permitidos: JPEG, PNG (validados por MIME type)
- * - Nombres únicos: {timestamp}_{random6bytes}.{ext}
+ * - Nombre por ID: {id_promocion}.{ext}
  * - Directorio: public/images/promocion/
  */
 
@@ -74,8 +74,12 @@ class PromocionController {
 		
 		if (!empty($errors)) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>$errors]); return; }
 
-		// Procesar imagen si se subió (opcional)
-		$imagenNombre = null;
+		// Crear promoción (sin imagen en BD)
+		$prom = new PromocionModel();
+		$newId = $prom->create($nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado);
+		if ($newId === false) { http_response_code(500); echo json_encode(['status'=>'error','message'=>'no se pudo crear promocion']); return; }
+
+		// Procesar imagen si se subió (opcional) y guardarla como {id}.{ext}
 		if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
 			$maxSize = 2 * 1024 * 1024; // 2MB
 			$allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
@@ -87,16 +91,14 @@ class PromocionController {
 			$ext = $allowed[$mime];
 			$uploadDir = __DIR__ . '/../../public/images/promocion/';
 			if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-			$imagenNombre = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
-			$dest = $uploadDir . $imagenNombre;
+			// Eliminar por seguridad si existiera
+			foreach (['jpg','png'] as $e) { $p = $uploadDir . $newId . '.' . $e; if (is_file($p)) @unlink($p); }
+			$dest = $uploadDir . $newId . '.' . $ext;
 			if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $dest)) { http_response_code(500); echo json_encode(['status'=>'error','message'=>'upload_failed']); return; }
 		}
 
-		// Crear promoción
-		$prom = new PromocionModel();
-		$ok = $prom->create($nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado, $imagenNombre);
 		header('Content-Type: application/json; charset=utf-8');
-		echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo crear promocion']);
+		echo json_encode(['status'=>'ok', 'id_promocion' => $newId]);
 	}
 
 	 /*
@@ -137,9 +139,12 @@ class PromocionController {
 
 		if (!empty($errors)) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>$errors]); return; }
 
-		// Procesar imagen si se subió (opcional)
-		$imagenNombre = null;
-		if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
+		// Actualizar promoción (sin imagen en BD)
+		$prom = new PromocionModel();
+		$ok = $prom->update($id, $nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado);
+
+		// Si se subió nueva imagen, guardarla como {id}.{ext} y eliminar otras extensiones
+		if ($ok && isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
 			$maxSize = 2 * 1024 * 1024;
 			$allowed = ['image/jpeg' => 'jpg', 'image/png' => 'png'];
 			if ($_FILES['imagen']['size'] > $maxSize) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>['imagen_too_large']]); return; }
@@ -150,21 +155,9 @@ class PromocionController {
 			$ext = $allowed[$mime];
 			$uploadDir = __DIR__ . '/../../public/images/promocion/';
 			if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
-			$imagenNombre = time() . '_' . bin2hex(random_bytes(6)) . '.' . $ext;
-			$dest = $uploadDir . $imagenNombre;
+			foreach (['jpg','png'] as $e) { $p = $uploadDir . $id . '.' . $e; if (is_file($p)) @unlink($p); }
+			$dest = $uploadDir . $id . '.' . $ext;
 			if (!move_uploaded_file($_FILES['imagen']['tmp_name'], $dest)) { http_response_code(500); echo json_encode(['status'=>'error','message'=>'upload_failed']); return; }
-		}
-
-		// Actualizar promoción
-		$prom = new PromocionModel();
-		// Obtener anterior imagen (para eliminar si se actualizó)
-		$existing = $prom->getById(intval($id));
-		$oldImagen = $existing['imagen'] ?? null;
-		$ok = $prom->update($id, $nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado, $imagenNombre);
-		// Si se actualizó y existía imagen anterior, eliminarla
-		if ($ok && $imagenNombre && $oldImagen) {
-			$oldPath = __DIR__ . '/../../public/images/promocion/' . $oldImagen;
-			if (is_file($oldPath)) @unlink($oldPath);
 		}
 		header('Content-Type: application/json; charset=utf-8');
 		echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo actualizar promocion']);
@@ -180,13 +173,13 @@ class PromocionController {
 		$id = $_POST['id'] ?? null;
 		if (!$id || !ctype_digit($id)) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'missing_id']); return; }
 		$prom = new PromocionModel();
-		// Antes de eliminar, obtener imagen para borrarla del filesystem
-		$existing = $prom->getById(intval($id));
-		$oldImagen = $existing['imagen'] ?? null;
 		$ok = $prom->delete(intval($id));
-		if ($ok && $oldImagen) {
-			$oldPath = __DIR__ . '/../../public/images/promocion/' . $oldImagen;
-			if (is_file($oldPath)) @unlink($oldPath);
+		if ($ok) {
+			$dir = __DIR__ . '/../../public/images/promocion/';
+			foreach (['jpg','png'] as $e) {
+				$p = $dir . intval($id) . '.' . $e;
+				if (is_file($p)) @unlink($p);
+			}
 		}
 		echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo eliminar promocion']);
 	}

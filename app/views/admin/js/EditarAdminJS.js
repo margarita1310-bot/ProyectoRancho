@@ -13,7 +13,7 @@
  * Nota sobre imágenes:
  * - El campo #imagen se limpia siempre (value = '')
  * - Permite al usuario OPCIONALMENTE subir nueva imagen
- * - Si NO sube imagen: mantiene la anterior en BD (controlador lo maneja)
+ * - Si NO sube imagen: mantiene el archivo existente en la carpeta (controlador lo maneja)
  * - Si sube imagen: reemplaza la anterior
  */
 

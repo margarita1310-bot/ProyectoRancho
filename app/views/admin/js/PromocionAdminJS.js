@@ -2,7 +2,7 @@
  * Promociones: crear / editar
  * Nota: La imagen es OPCIONAL en crear y editar
  * Si se proporciona, se valida en el servidor (MIME, tamaño)
- * Si NO se proporciona, se guarda null en la BD
+ * Si NO se proporciona, simplemente no se sube archivo (no se guarda en BD)
  */
 
 // Variable global para almacenar todas las promociones

@@ -32,6 +32,18 @@ class UserController {
         try {
             $model = new PromocionModel();
             $promociones = $model->getAll();
+            // Adjuntar nombre de imagen desde filesystem si existe (id.{jpg|png})
+            $dir = __DIR__ . '/../../public/images/promocion/';
+            foreach ($promociones as &$p) {
+                $id = $p['id_promocion'] ?? null;
+                $p['imagen'] = null;
+                if ($id !== null) {
+                    foreach (['jpg','png'] as $ext) {
+                        $fname = $id . '.' . $ext;
+                        if (is_file($dir . $fname)) { $p['imagen'] = $fname; break; }
+                    }
+                }
+            }
             echo json_encode($promociones);
         } catch (Exception $e) {
             http_response_code(500);
@@ -49,6 +61,18 @@ class UserController {
         try {
             $model = new EventoModel();
             $eventos = $model->getAll();
+            // Adjuntar nombre de imagen desde filesystem si existe (id.{jpg|png})
+            $dir = __DIR__ . '/../../public/images/evento/';
+            foreach ($eventos as &$ev) {
+                $id = $ev['id_evento'] ?? null;
+                $ev['imagen'] = null;
+                if ($id !== null) {
+                    foreach (['jpg','png'] as $ext) {
+                        $fname = $id . '.' . $ext;
+                        if (is_file($dir . $fname)) { $ev['imagen'] = $fname; break; }
+                    }
+                }
+            }
             echo json_encode($eventos);
         } catch (Exception $e) {
             http_response_code(500);
@@ -171,6 +195,38 @@ class UserController {
         }
         
         try {
+            // Validar hora contra horario del lugar por día
+            $fechaObj = DateTime::createFromFormat('Y-m-d', $datos['fecha']);
+            $horaStr = $datos['hora'];
+            if (!$fechaObj || !preg_match('/^(?:[01][0-9]|2[0-3]):[0-5][0-9]$/', $horaStr)) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Fecha u hora inválida']);
+                return;
+            }
+            $dow = (int)$fechaObj->format('w'); // 0=domingo..6=sábado
+            $horario = [
+                0 => ['open' => true,  'min' => '15:00', 'max' => '21:00'], // Domingo
+                1 => ['open' => true,  'min' => '11:00', 'max' => '22:00'], // Lunes
+                2 => ['open' => true,  'min' => '10:00', 'max' => '22:00'], // Martes
+                3 => ['open' => true,  'min' => '10:30', 'max' => '22:00'], // Miércoles
+                4 => ['open' => true,  'min' => '11:00', 'max' => '23:30'], // Jueves
+                5 => ['open' => true,  'min' => '11:00', 'max' => '22:00'], // Viernes
+                6 => ['open' => false],                                  // Sábado cerrado
+            ];
+            $cfg = $horario[$dow] ?? ['open' => false];
+            if (!$cfg['open']) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'Horario no disponible para ese día']);
+                return;
+            }
+            $toMin = function($hm){ [$h,$m] = array_map('intval', explode(':', $hm)); return $h*60 + $m; };
+            $v = $toMin($horaStr);
+            if ($v < $toMin($cfg['min']) || $v > $toMin($cfg['max'])) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'La hora está fuera del horario permitido']);
+                return;
+            }
+
             require_once __DIR__ . '/../models/Conexion.php';
             $db = Conexion::conectar();
             

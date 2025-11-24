@@ -94,8 +94,9 @@
                         <i class="bi bi-clock" aria-hidden="true"></i>
                         <span class="visually-hidden">Hora de la reservación</span>
                     </span>
-                    <input type="time" class="form-control" id="hora" name="hora" aria-describedby="hora-addon" required>
+                        <input type="time" class="form-control" id="hora" name="hora" aria-describedby="hora-addon" required disabled>
                 </div>
+                    <small id="hora-help" class="text-muted">Selecciona una fecha para ver el horario disponible.</small>
             </div>
             <button type="submit" class="btn">Reservar</button>
         </form>

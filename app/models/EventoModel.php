@@ -5,13 +5,13 @@
  * Modelo para gestionar eventos con soporte opcional para imágenes.
  * Maneja CRUD: create, read, update, delete.
  * 
- * Tabla: evento (id_evento, nombre, descripcion, fecha, hora_inicio, hora_fin, imagen)
+ * Tabla: evento (id_evento, nombre, descripcion, fecha, hora_inicio, hora_fin)
  * 
  * Métodos:
  * - getAll(): Retorna todos los eventos
- * - create(..., $imagen): Crea nuevo evento (imagen es parámetro variádico OPCIONAL)
+ * - create($nombre, $descripcion, $fecha, $hora_inicio, $hora_fin)
  * - getById($id): Obtiene un evento por ID
- * - update(..., $imagen): Actualiza evento (imagen opcional)
+ * - update($id, $nombre, $descripcion, $fecha, $hora_inicio, $hora_fin)
  * - delete($id): Elimina un evento
  */
 
@@ -31,31 +31,26 @@ class EventoModel {
     }
 
      /*
-     * create($nombre, $descripcion, $fecha, $hora_inicio, $hora_fin[, $imagen])
+    * create($nombre, $descripcion, $fecha, $hora_inicio, $hora_fin)
      * 
-     * Crea nuevo evento. La imagen es parámetro variádico (6to parámetro opcional).
+    * Crea nuevo evento. (La imagen se gestiona por filesystem, no en BD).
      * 
      * @param string $nombre - Nombre del evento
      * @param string $descripcion - Descripción
      * @param string $fecha - Fecha (YYYY-MM-DD)
      * @param string $hora_inicio - Hora inicio (HH:MM)
      * @param string $hora_fin - Hora fin (HH:MM)
-     * @param string|null $imagen - (Opcional) Nombre del archivo de imagen
-     * @return bool - true si se insertó, false si hubo error
+     * @return int|false - ID insertado si se insertó, false si hubo error
      */
     public function create($nombre, $descripcion, $fecha, $hora_inicio, $hora_fin) {
         $db = Conexion::conectar();
-        $args = [$nombre, $descripcion, $fecha, $hora_inicio, $hora_fin];
-        if (func_num_args() >= 6) {
-            $imagen = func_get_arg(5);
-            $sql = "INSERT INTO evento (nombre, descripcion, fecha, hora_inicio, hora_fin, imagen) VALUES (?, ?, ?, ?, ?, ?)";
-            $stmt = $db->prepare($sql);
-            $args[] = $imagen;
-        } else {
-            $sql = "INSERT INTO evento (nombre, descripcion, fecha, hora_inicio, hora_fin) VALUES (?, ?, ?, ?, ?)";
-            $stmt = $db->prepare($sql);
+        $sql = "INSERT INTO evento (nombre, descripcion, fecha, hora_inicio, hora_fin) VALUES (?, ?, ?, ?, ?)";
+        $stmt = $db->prepare($sql);
+        $ok = $stmt->execute([$nombre, $descripcion, $fecha, $hora_inicio, $hora_fin]);
+        if ($ok) {
+            return (int)$db->lastInsertId();
         }
-        return $stmt->execute($args);
+        return false;
     }
 
      /*
@@ -73,9 +68,9 @@ class EventoModel {
     }
 
      /*
-     * update($id, $nombre, $descripcion, $fecha, $hora_inicio, $hora_fin[, $imagen])
+    * update($id, $nombre, $descripcion, $fecha, $hora_inicio, $hora_fin)
      * 
-     * Actualiza un evento. La imagen es parámetro variádico (7mo parámetro opcional).
+    * Actualiza un evento. (La imagen se gestiona por filesystem, no en BD).
      * 
      * @param int $id - ID del evento
      * @param string $nombre - Nuevo nombre
@@ -83,19 +78,10 @@ class EventoModel {
      * @param string $fecha - Nueva fecha
      * @param string $hora_inicio - Nueva hora inicio
      * @param string $hora_fin - Nueva hora fin
-     * @param string|null $imagen - (Opcional) Nuevo nombre de imagen
      * @return bool - true si se actualizó, false si hubo error
      */
     public function update($id, $nombre, $descripcion, $fecha, $hora_inicio, $hora_fin) {
         $db = Conexion::conectar();
-        if (func_num_args() >= 7) {
-            $imagen = func_get_arg(6);
-            if ($imagen) {
-                $sql = "UPDATE evento SET nombre=?, descripcion=?, fecha=?, hora_inicio=?, hora_fin=?, imagen=? WHERE id_evento=?";
-                $stmt = $db->prepare($sql);
-                return $stmt->execute([$nombre, $descripcion, $fecha, $hora_inicio, $hora_fin, $imagen, $id]);
-            }
-        }
         $sql = "UPDATE evento SET nombre=?, descripcion=?, fecha=?, hora_inicio=?, hora_fin=? WHERE id_evento=?";
         $stmt = $db->prepare($sql);
         return $stmt->execute([$nombre, $descripcion, $fecha, $hora_inicio, $hora_fin, $id]);
