@@ -37,7 +37,7 @@ class PromocionController {
 	 */
 	public function index() {
 		$prom = new PromocionModel();
-		$promocion = $prom->getAll();
+		$promocion = $prom->getPromocionesConProductos();
 		
 		// Si es petición AJAX, devolver JSON
 		if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
@@ -62,6 +62,7 @@ class PromocionController {
 		$fecha_inicio = isset($_POST['fecha_inicio']) ? trim($_POST['fecha_inicio']) : null;
 		$fecha_fin = isset($_POST['fecha_fin']) ? trim($_POST['fecha_fin']) : null;
 		$estado = isset($_POST['estado']) ? trim($_POST['estado']) : null;
+		$productos = isset($_POST['productos']) ? $_POST['productos'] : [];
 
 		// Validar parámetros de texto
 		$errors = [];
@@ -78,6 +79,11 @@ class PromocionController {
 		$prom = new PromocionModel();
 		$newId = $prom->create($nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado);
 		if ($newId === false) { http_response_code(500); echo json_encode(['status'=>'error','message'=>'no se pudo crear promocion']); return; }
+
+		// Asociar productos a la promoción
+		if (!empty($productos) && is_array($productos)) {
+			$prom->setProductosToPromocion($newId, $productos);
+		}
 
 		// Procesar imagen si se subió (opcional) y guardarla como {id}.{ext}
 		if (isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -107,11 +113,34 @@ class PromocionController {
 	 * @return void - Retorna JSON con datos de la promoción
 	 */
 	public function obtener() {
-		$id = $_POST['id'] ?? null;
-		if (!$id || !ctype_digit($id)) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'missing_id']); return; }
-		header('Content-Type: application/json; charset=utf-8'); 
-		$prom = new PromocionModel();
-		echo json_encode($prom->getById(intval($id)));
+		header('Content-Type: application/json; charset=utf-8');
+		try {
+			$id = $_POST['id'] ?? null;
+			if (!$id || !ctype_digit($id)) { 
+				http_response_code(400); 
+				echo json_encode(['status'=>'error','message'=>'missing_id']); 
+				return; 
+			}
+			
+			$prom = new PromocionModel();
+			$data = $prom->getById(intval($id));
+			
+			if (!$data) {
+				http_response_code(404);
+				echo json_encode(['status'=>'error','message'=>'promocion_not_found']);
+				return;
+			}
+			
+			// Agregar productos asociados (con manejo de errores interno)
+			$data['productos'] = $prom->getProductosByPromocionId(intval($id));
+			
+			echo json_encode($data);
+			
+		} catch (Exception $e) {
+			error_log("Error en PromocionController::obtener - " . $e->getMessage());
+			http_response_code(500);
+			echo json_encode(['status'=>'error','message'=>'internal_error', 'details' => $e->getMessage()]);
+		}
 	}
 
 	 /*
@@ -127,6 +156,7 @@ class PromocionController {
 		$fecha_inicio = isset($_POST['fecha_inicio']) ? trim($_POST['fecha_inicio']) : null;
 		$fecha_fin = isset($_POST['fecha_fin']) ? trim($_POST['fecha_fin']) : null;
 		$estado = isset($_POST['estado']) ? trim($_POST['estado']) : null;
+		$productos = isset($_POST['productos']) ? $_POST['productos'] : [];
 
 		// Validar parámetros
 		$errors = [];
@@ -142,6 +172,11 @@ class PromocionController {
 		// Actualizar promoción (sin imagen en BD)
 		$prom = new PromocionModel();
 		$ok = $prom->update($id, $nombre, $descripcion, $fecha_inicio, $fecha_fin, $estado);
+
+		// Actualizar productos asociados
+		if ($ok && is_array($productos)) {
+			$prom->setProductosToPromocion($id, $productos);
+		}
 
 		// Si se subió nueva imagen, guardarla como {id}.{ext} y eliminar otras extensiones
 		if ($ok && isset($_FILES['imagen']) && $_FILES['imagen']['error'] === UPLOAD_ERR_OK) {
@@ -182,6 +217,19 @@ class PromocionController {
 			}
 		}
 		echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo eliminar promocion']);
+	}
+
+	 /*
+	 * getProductos()
+	 * Obtiene todos los productos para el selector de promociones.
+	 * @return void - Retorna JSON
+	 */
+	public function getProductos() {
+		header('Content-Type: application/json; charset=utf-8');
+		require_once __DIR__ . '/../models/ProductoModel.php';
+		$productoModel = new ProductoModel();
+		$productos = $productoModel->getAll();
+		echo json_encode($productos);
 	}
 }
 

@@ -68,14 +68,36 @@ async function cargarReservasPorFecha() {
         
         // Si no hay disponibilidad configurada
         if (!resultado.disponibilidad) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-warning">No hay disponibilidad configurada para esta fecha</td></tr>';
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center p-4">
+                        <div class="alert alert-warning d-inline-flex align-items-center mb-0" role="alert">
+                            <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                                <use xlink:href="#exclamation-triangle-fill"/>
+                            </svg>
+                            <div><strong>No hay disponibilidad configurada</strong> para esta fecha</div>
+                        </div>
+                    </td>
+                </tr>
+            `;
             alerta.classList.remove('d-none');
             return;
         }
         
         // Si no hay mesas activas
         if (resultado.mesas.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">No hay mesas activas para esta fecha</td></tr>';
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="text-center p-4">
+                        <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
+                            <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                                <use xlink:href="#info-fill"/>
+                            </svg>
+                            <div>No hay mesas activas para esta fecha</div>
+                        </div>
+                    </td>
+                </tr>
+            `;
             alerta.classList.add('d-none');
             return;
         }
@@ -143,7 +165,18 @@ async function cargarReservasPorFecha() {
         
     } catch (error) {
         console.error('Error al cargar reservas:', error);
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error al cargar las reservas. Intenta de nuevo.</td></tr>';
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center p-4">
+                    <div class="alert alert-danger d-inline-flex align-items-center mb-0" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                            <use xlink:href="#x-circle-fill"/>
+                        </svg>
+                        <div><strong>Error al cargar las reservas.</strong> Intenta de nuevo.</div>
+                    </div>
+                </td>
+            </tr>
+        `;
     }
 }
 

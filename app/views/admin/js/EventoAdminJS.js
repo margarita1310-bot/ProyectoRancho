@@ -85,7 +85,18 @@ function renderizarEventos(eventos) {
     tbody.innerHTML = '';
     
     if (eventos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay eventos para este filtro</td></tr>';
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center p-4">
+                    <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                            <use xlink:href="#info-fill"/>
+                        </svg>
+                        <div>No hay eventos para este filtro</div>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
     
@@ -154,7 +165,18 @@ async function cargarEventos() {
         
     } catch (error) {
         console.error('Error al cargar eventos:', error);
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-danger">Error al cargar eventos</td></tr>';
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center p-4">
+                    <div class="alert alert-danger d-inline-flex align-items-center mb-0" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                            <use xlink:href="#x-circle-fill"/>
+                        </svg>
+                        <div><strong>Error al cargar eventos.</strong> Intenta recargar la página.</div>
+                    </div>
+                </td>
+            </tr>
+        `;
     }
 }
 

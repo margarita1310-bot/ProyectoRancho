@@ -28,7 +28,7 @@ class AdminController {
         require_once __DIR__ . '/../models/MesaModel.php';
         
         $promModel = new PromocionModel();
-        $promocion = $promModel->getAll();
+        $promocion = $promModel->getPromocionesConProductos();
         
         $evModel = new EventoModel();
         $evento = $evModel->getAll();

@@ -32,7 +32,17 @@ function abrirEditar(id, controller) {
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
         body: data
     })
-    .then(parseResponse)
+    .then(async response => {
+        const text = await response.text();
+        console.log('Response status:', response.status);
+        console.log('Response text:', text);
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
+            throw new Error('Respuesta no válida del servidor: ' + text.substring(0, 200));
+        }
+    })
     .then(p => {
         if (controller === 'Promocion') {
             const modal = document.querySelector("#modal-editar-promocion");
@@ -46,6 +56,15 @@ function abrirEditar(id, controller) {
             modal.querySelector("#fechaFin").value = p.fecha_fin;
             const estadoSelect = modal.querySelector("#estado");
             if (estadoSelect) estadoSelect.value = p.estado || '';
+            
+            // Pre-seleccionar productos asociados
+            const selectProductos = modal.querySelector("#productos");
+            if (selectProductos && p.productos && Array.isArray(p.productos)) {
+                Array.from(selectProductos.options).forEach(option => {
+                    option.selected = p.productos.includes(option.value);
+                });
+            }
+            
             // Limpiar campo de imagen (es opcional, no cargar imagen anterior)
             const imagenInput = modal.querySelector("#imagen");
             if (imagenInput) imagenInput.value = '';
@@ -75,7 +94,10 @@ function abrirEditar(id, controller) {
             if (categoriaSelect) categoriaSelect.value = p.categoria || '';
         }
     })
-    .catch(err => { console.error('Error al obtener registro:', err); showToast('error','No se pudo cargar el registro para editar'); });
+    .catch(err => { 
+        console.error('Error completo al obtener registro:', err); 
+        showToast('error','No se pudo cargar el registro: ' + err.message); 
+    });
 }
 
 document.addEventListener('DOMContentLoaded', function() {

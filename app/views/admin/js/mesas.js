@@ -21,7 +21,18 @@ async function renderMesas() {
     const list = await getMesas(hoy);
     tbody.innerHTML = '';
     if (!list || list.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay disponibilidad registrada</td></tr>';
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="text-center p-4">
+                    <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                            <use xlink:href="#info-fill"/>
+                        </svg>
+                        <div>No hay disponibilidad registrada</div>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
     let globalIndex = 1;

@@ -31,7 +31,7 @@ class UserController {
         header('Content-Type: application/json; charset=utf-8');
         try {
             $model = new PromocionModel();
-            $promociones = $model->getAll();
+            $promociones = $model->getPromocionesConProductos();
             // Adjuntar nombre de imagen desde filesystem si existe (id.{jpg|png})
             $dir = __DIR__ . '/../../public/images/promocion/';
             foreach ($promociones as &$p) {

@@ -79,7 +79,18 @@ function renderizarProductos(productos) {
     tbody.innerHTML = '';
     
     if (productos.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center">No hay productos para este filtro</td></tr>';
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center p-4">
+                    <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                            <use xlink:href="#info-fill"/>
+                        </svg>
+                        <div>No hay productos para este filtro</div>
+                    </div>
+                </td>
+            </tr>
+        `;
         return;
     }
     
@@ -148,7 +159,18 @@ async function cargarProductos() {
         
     } catch (error) {
         console.error('Error al cargar productos:', error);
-        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error al cargar productos</td></tr>';
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center p-4">
+                    <div class="alert alert-danger d-inline-flex align-items-center mb-0" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                            <use xlink:href="#x-circle-fill"/>
+                        </svg>
+                        <div><strong>Error al cargar productos.</strong> Intenta recargar la página.</div>
+                    </div>
+                </td>
+            </tr>
+        `;
     }
 }
 

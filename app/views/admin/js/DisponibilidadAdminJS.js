@@ -50,8 +50,13 @@ async function cargarDisponibilidades() {
         if (disponibilidades.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="text-center text-muted">
-                        No hay disponibilidades configuradas. Crea la primera usando el formulario.
+                    <td colspan="4" class="text-center p-4">
+                        <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
+                            <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                                <use xlink:href="#info-fill"/>
+                            </svg>
+                            <div>No hay disponibilidades configuradas. Crea la primera usando el formulario.</div>
+                        </div>
                     </td>
                 </tr>
             `;
@@ -94,8 +99,13 @@ async function cargarDisponibilidades() {
         console.error('Error al cargar disponibilidades:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center text-danger">
-                    Error al cargar las disponibilidades. Intenta recargar la página.
+                <td colspan="4" class="text-center p-4">
+                    <div class="alert alert-danger d-inline-flex align-items-center mb-0" role="alert">
+                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
+                            <use xlink:href="#x-circle-fill"/>
+                        </svg>
+                        <div><strong>Error al cargar las disponibilidades.</strong> Intenta recargar la página.</div>
+                    </div>
                 </td>
             </tr>
         `;
@@ -129,9 +139,7 @@ async function crearDisponibilidad(e) {
             body: formData
         });
         
-        console.log('Response status:', response.status);
         const resultado = await response.json();
-        console.log('Response data:', resultado);
         
         if (response.ok && resultado.status === 'ok') {
             showToast('success', 'Disponibilidad creada exitosamente');
@@ -145,7 +153,7 @@ async function crearDisponibilidad(e) {
         }
         
     } catch (error) {
-        console.error('Error completo:', error);
+        console.error('Error al crear disponibilidad:', error);
         showToast('error', 'Error al crear la disponibilidad: ' + error.message);
     }
 }

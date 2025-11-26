@@ -236,15 +236,12 @@ async function manejarEnvioReserva(e) {
         
         if (resultado.status === 'ok') {
             mostrarMensaje('¡Reserva enviada exitosamente! Folio: ' + (resultado.folio || ''), 'success');
+            
+            // Limpiar formulario
+            e.target.reset();
         } else {
             throw new Error(resultado.mensaje || 'Error al crear reserva');
         }
-
-        // Mostrar mensaje de éxito
-        mostrarMensaje('¡Reserva enviada exitosamente! Te contactaremos pronto.', 'success');
-        
-        // Limpiar formulario
-        e.target.reset();
 
         // Restaurar botón
         if (btnSubmit) {

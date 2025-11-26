@@ -19,7 +19,18 @@ async function cargarEventos() {
         const data = await response.json();
         
         if (!data || !Array.isArray(data)) {
-            container.innerHTML = '<p class="text-center">No hay eventos programados.</p>';
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Info:">
+                            <use xlink:href="#info-fill"/>
+                        </svg>
+                        <div>
+                            No hay eventos programados actualmente.
+                        </div>
+                    </div>
+                </div>
+            `;
             return;
         }
 
@@ -34,7 +45,18 @@ async function cargarEventos() {
         }).sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); // Ordenar por fecha
 
         if (eventosFuturos.length === 0) {
-            container.innerHTML = '<p class="text-center">No hay eventos próximos programados.</p>';
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Info:">
+                            <use xlink:href="#info-fill"/>
+                        </svg>
+                        <div>
+                            No hay eventos próximos programados.
+                        </div>
+                    </div>
+                </div>
+            `;
             return;
         }
 
@@ -76,7 +98,18 @@ async function cargarEventos() {
 
     } catch (error) {
         console.error('Error al cargar eventos:', error);
-        container.innerHTML = '<p class="text-center text-danger">Error al cargar los eventos.</p>';
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Error:">
+                        <use xlink:href="#x-circle-fill"/>
+                    </svg>
+                    <div>
+                        <strong>Error al cargar los eventos.</strong> Por favor, intenta más tarde.
+                    </div>
+                </div>
+            </div>
+        `;
     }
 }
 

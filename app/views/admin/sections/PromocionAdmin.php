@@ -58,6 +58,7 @@
                 <tr>
                     <th>Nombre</th>
                     <th>Descripción</th>
+                    <th>Productos</th>
                     <th>Fecha inicio</th>
                     <th>Fecha fin</th>
                     <th>Estado</th>
@@ -71,6 +72,13 @@
                         <tr>
                             <td><?= htmlspecialchars($pr['nombre']) ?></td>
                             <td><?= htmlspecialchars($pr['descripcion']) ?></td>
+                            <td>
+                                <?php if (!empty($pr['productos_nombres'])): ?>
+                                    <small><?= htmlspecialchars($pr['productos_nombres']) ?></small>
+                                <?php else: ?>
+                                    <small class="text-muted">Sin productos</small>
+                                <?php endif; ?>
+                            </td>
                             <td><?= htmlspecialchars($pr['fecha_inicio']) ?></td>
                             <td><?= htmlspecialchars($pr['fecha_fin']) ?></td>
                             <td><?= htmlspecialchars($pr['estado']) ?></td>
@@ -87,7 +95,7 @@
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="6" class="text-center">No hay promociones</td></tr>
+                    <tr><td colspan="7" class="text-center">No hay promociones</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

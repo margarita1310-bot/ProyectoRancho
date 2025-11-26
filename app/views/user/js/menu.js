@@ -4,10 +4,13 @@
  */
 
 let productosCache = [];
+let vistaCompleta = true; // Estado del toggle
+let categoriaActual = null; // Categoría seleccionada
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarProductos();
     configurarFiltros();
+    configurarToggleVista();
 });
 
 async function cargarProductos() {
@@ -24,7 +27,18 @@ async function cargarProductos() {
         const data = await response.json();
         
         if (!data || !Array.isArray(data)) {
-            container.innerHTML = '<p class="text-center">No hay productos disponibles.</p>';
+            container.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info d-flex align-items-center" role="alert">
+                        <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Info:">
+                            <use xlink:href="#info-fill"/>
+                        </svg>
+                        <div>
+                            No hay productos disponibles en el menú.
+                        </div>
+                    </div>
+                </div>
+            `;
             return;
         }
 
@@ -33,7 +47,18 @@ async function cargarProductos() {
 
     } catch (error) {
         console.error('Error al cargar productos:', error);
-        container.innerHTML = '<p class="text-center text-danger">Error al cargar el menú.</p>';
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Error:">
+                        <use xlink:href="#x-circle-fill"/>
+                    </svg>
+                    <div>
+                        <strong>Error al cargar el menú.</strong> Por favor, intenta más tarde.
+                    </div>
+                </div>
+            </div>
+        `;
     }
 }
 
@@ -52,20 +77,40 @@ function configurarFiltros() {
         const btn = document.getElementById(cat.id);
         if (btn) {
             btn.addEventListener('click', () => {
-                if (cat.nombre === null) {
-                    // Mostrar todos
-                    mostrarProductos(productosCache);
-                } else {
-                    // Filtrar por categoría
-                    const filtrados = productosCache.filter(p => 
-                        p.categoria && p.categoria.toLowerCase() === cat.nombre.toLowerCase()
-                    );
-                    mostrarProductos(filtrados);
-                }
+                categoriaActual = cat.nombre;
+                aplicarFiltros();
                 actualizarBotonActivo(cat.id);
             });
         }
     });
+}
+
+function configurarToggleVista() {
+    const toggle = document.getElementById('toggle-vista-completa');
+    if (toggle) {
+        toggle.addEventListener('change', (e) => {
+            vistaCompleta = e.target.checked;
+            aplicarFiltros();
+        });
+    }
+}
+
+function aplicarFiltros() {
+    let productosFiltrados = productosCache;
+    
+    // Filtrar por categoría
+    if (categoriaActual !== null) {
+        productosFiltrados = productosCache.filter(p => 
+            p.categoria && p.categoria.toLowerCase() === categoriaActual.toLowerCase()
+        );
+    }
+    
+    // Limitar cantidad si no es vista completa
+    if (!vistaCompleta) {
+        productosFiltrados = productosFiltrados.slice(0, 6); // Mostrar solo 6 productos
+    }
+    
+    mostrarProductos(productosFiltrados);
 }
 
 function mostrarProductos(productos) {
@@ -73,32 +118,28 @@ function mostrarProductos(productos) {
     if (!container) return;
 
     if (productos.length === 0) {
-        container.innerHTML = '<p class="text-center">No hay productos en esta categoría.</p>';
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="alert alert-warning d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Warning:">
+                        <use xlink:href="#exclamation-triangle-fill"/>
+                    </svg>
+                    <div>
+                        <strong>No hay productos disponibles</strong> en esta categoría.
+                    </div>
+                </div>
+            </div>
+        `;
         return;
     }
 
     container.innerHTML = productos.map(producto => {
-        // Determinar icono según categoría
-        let icono = 'fa-circle';
-        const cat = producto.categoria ? producto.categoria.toLowerCase() : '';
-        if (cat === 'botellas') icono = 'fa-wine-bottle';
-        else if (cat === 'shots') icono = 'fa-glass-whiskey';
-        else if (cat === 'cubas') icono = 'fa-glass-martini-alt';
-        else if (cat === 'cervezas') icono = 'fa-beer';
-        else if (cat === 'cocteles') icono = 'fa-cocktail';
-        else if (cat === 'tacos') icono = 'fa-utensils';
-
         return `
-            <div class="col-md-4 col-lg-3 mb-4">
-                <div class="card card-producto h-100">
-                    <div class="card-body-producto">
-                        <h5 class="card-title text-dark fw-bold">${producto.nombre}</h5>
-                        ${producto.categoria ? `
-                            <span class="badge badge-categoria">
-                                ${producto.categoria}
-                            </span>
-                        ` : ''}
-                        <div class="producto-precio">
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="card card-menu-simple">
+                    <div class="card-body text-center">
+                        <h5 class="producto-nombre">${producto.nombre}</h5>
+                        <div class="producto-precio-simple">
                             $${parseFloat(producto.precio).toFixed(2)}
                         </div>
                     </div>
