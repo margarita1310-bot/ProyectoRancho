@@ -1,8 +1,6 @@
 <?php
-//Conexion
 class Conexion {
     private static $conexion = null;
-
     public static function conectar() {
         if (self::$conexion === null) {
             try {

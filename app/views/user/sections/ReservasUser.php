@@ -1,4 +1,3 @@
-<!--Elementos de las reservaciones-->
 <section id="reservar" class="reservar">
     <div class="side-left">
         <h1>Reservaciones</h1>
@@ -6,9 +5,7 @@
             Si necesitas cancelar, envíanos un mensaje por WhatsApp al 7721698550.
             ¡Gracias por tu comprensión!
         </p>
-        <!--Formulario-->
         <form id="form-reserva" class="text-start reservar">
-            <!--Inputs con detalles del cliente-->
             <h2>Detalles del cliente</h2>
             <div class="mb-3">
                 <label for="nombre" class="form-label">Nombre Completo</label>
@@ -40,8 +37,6 @@
                     <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="Ej. 7721698550" aria-describedby="telefono-addon" required>
                 </div>
             </div>
-
-            <!--Inputs con detalles de la reservación-->
             <h2>Detalles de la reservación</h2>
             <div class="input-group mb-3">
                 <label for="personas" class="form-label">Número de personas</label>
@@ -86,13 +81,10 @@
                         <option selected disabled value="">Primero selecciona una fecha</option>
                     </select>
                 </div>
-                <div class="alert alert-info d-flex align-items-center mt-2" role="alert">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="16" x2="12" y2="12"></line>
-                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                    </svg>
-                    <span>Selecciona una fecha para ver las mesas disponibles.</span>
+                <div class="col-12 mt-2">
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> Selecciona una fecha para ver las mesas disponibles.
+                    </div>
                 </div>
             </div>
             <div class="mb-3">
@@ -104,13 +96,10 @@
                     </span>
                         <input type="time" class="form-control" id="hora" name="hora" aria-describedby="hora-addon" required disabled>
                 </div>
-                <div class="alert alert-info d-flex align-items-center mt-2" role="alert" id="hora-help">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2">
-                        <circle cx="12" cy="12" r="10"></circle>
-                        <line x1="12" y1="16" x2="12" y2="12"></line>
-                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
-                    </svg>
-                    <span>Selecciona una fecha para ver el horario disponible.</span>
+                <div class="col-12 mt-2">
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> Selecciona una fecha para ver el horario disponible. Solo se permiten reservas cada 30 minutos (ej: 11:00, 11:30, 12:00).
+                    </div>
                 </div>
             </div>
             <button type="submit" class="btn">Reservar</button>

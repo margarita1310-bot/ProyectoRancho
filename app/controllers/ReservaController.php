@@ -1,257 +1,253 @@
 <?php
- /*
- * ReservaController.php
- * 
- * Controlador para gestión de reservas.
- * Permite listar, filtrar por fecha, confirmar (con asignación opcional de mesa) y cancelar reservas.
- * 
- * Acciones:
- * - index: GET - Muestra lista de reservas
- * - listar: GET - Retorna JSON con reservas (opcional filtro por fecha)
- * - confirmar: POST - Marca reserva como confirmada (opcionalmente asigna mesa)
- * - declinar: POST - Elimina una reserva
- * 
- * Tabla de base de datos: reserva (id_reserva, id_cliente, id_evento, id_mesa, fecha, hora, num_personas, estado, fecha_creacion, folio)	
-)
- * 
- * Estados de reserva: 'pendiente', 'confirmada', 'cancelada'
- * 
- * Requiere: Autenticación de administrador (ensureAdmin())
- */
 
 require_once __DIR__ . '/../models/ReservaModel.php';
 require_once __DIR__ . '/Auth.php';
 
 ensureAdmin();
 
-class ReservaController {
-     /*
-     * index()
-     * Muestra la lista completa de reservas.
-     * @return void - Incluye vista reservas.php
+/**
+ * Controlador de Reservas
+ * Gestiona la confirmación, cancelación y obtención de reservas
+ * Incluye gestión de disponibilidad de mesas por fecha
+ */
+class ReservaController
+{
+    /**
+     * Carga la vista del dashboard administrativo con todas las reservas.
+     * 
+     * @return void Renderiza la vista del dashboard
      */
-    public function index() {
-        // Cargar vista de reservas (dashboard incluirá esta vista)
-        $resModel = new Reserva();
+    public function index()
+    {
+        $resModel = new ReservaModel();
         $reserva = $resModel->getAll();
         require_once __DIR__ . '/../views/admin/DashboardAdmin.php';
     }
 
-     /*
-     * listar()
-     * Retorna lista de reservas en JSON.
-     * Si se proporciona fecha, filtra por esa fecha.
-     * @return void - Retorna JSON con array de reservas
+    /**
+     * Lista reservas en formato JSON.
+     * Si se proporciona fecha, retorna reservas de esa fecha.
+     * Si no, retorna todas las reservas.
+     * 
+     * @return void Envía respuesta JSON con reservas
      */
-    public function listar() {
+    public function listar()
+    {
         header('Content-Type: application/json; charset=utf-8');
+
         $fecha = $_GET['fecha'] ?? null;
-        $res = new Reserva();
-        if ($fecha) { echo json_encode($res->getByDate($fecha)); return; }
+        $res = new ReservaModel();
+
+        if ($fecha) {
+            echo json_encode($res->getByDate($fecha));
+            return;
+        }
+
         echo json_encode($res->getAll());
     }
 
-     /*
-     * confirmar()
-     * Marca una reserva como confirmada.
-     * Opcionalmente asigna un ID de mesa a la reserva y actualiza su estado.
+    /**
+     * Confirma una reserva pendiente y opcionalmente asigna una mesa.
+     * Valida que la mesa esté activa y disponible antes de asignarla.
      * 
-     * Validaciones:
-     * - La reserva debe existir
-     * - La reserva debe estar en estado 'pendiente'
-     * - Si se asigna mesa, esta debe estar disponible
-     * 
-     * Flujo:
-     * 1. Valida ID de reserva
-     * 2. Verifica que la reserva esté pendiente
-     * 3. Si se proporciona id_mesa:
-     *    - Valida que sea numérico
-     *    - Verifica que la mesa esté Disponible
-     *    - Actualiza: estado='confirmada', id_mesa={id}
-     *    - Actualiza mesa: estado='Ocupada', id_cliente={cliente}
-     * 4. Si no se proporciona mesa:
-     *    - Actualiza solo: estado='confirmada'
-     * 
-     * @return void - Retorna JSON
+     * @return void Envía respuesta JSON con resultado de la operación
      */
-    public function confirmar() {
+    public function confirmar()
+    {
         header('Content-Type: application/json; charset=utf-8');
+
         $id = isset($_POST['id']) ? trim($_POST['id']) : null;
-        
-        if (!$id || !ctype_digit($id)) { 
-            http_response_code(400); 
-            echo json_encode(['status'=>'error','message'=>'missing_id']); 
-            return; 
+
+        // Validar ID de reserva
+        if (!$id || !ctype_digit($id)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'missing_id']);
+            return;
         }
-        
+
+        // Obtener reserva
         $res = new ReservaModel();
-        
-        // Verificar que la reserva existe y está pendiente
         $reserva = $res->getById(intval($id));
+
         if (!$reserva) {
             http_response_code(404);
-            echo json_encode(['status'=>'error','message'=>'reservation_not_found']);
+            echo json_encode(['status' => 'error', 'message' => 'reservation_not_found']);
             return;
         }
-        
+
+        // Verificar que la reserva esté pendiente
         if ($reserva['estado'] !== 'pendiente') {
             http_response_code(400);
-            echo json_encode(['status'=>'error','message'=>'reservation_not_pending', 'detail'=>'La reserva ya fue procesada']);
+            echo json_encode(['status' => 'error', 'message' => 'reservation_not_pending', 'detail' => 'La reserva ya fue procesada']);
             return;
         }
-        
+
+        // Obtener y validar mesa si se proporciona
         $idMesa = isset($_POST['id_mesa']) ? trim($_POST['id_mesa']) : null;
-        
-        if ($idMesa !== null && $idMesa !== '') { 
-            if (!ctype_digit($idMesa)) { 
-                http_response_code(400); 
-                echo json_encode(['status'=>'error','message'=>'mesa_invalid']); 
-                return; 
+
+        if ($idMesa !== null && $idMesa !== '') {
+            // Validar ID de mesa
+            if (!ctype_digit($idMesa)) {
+                http_response_code(400);
+                echo json_encode(['status' => 'error', 'message' => 'mesa_invalid']);
+                return;
             }
-            
-            // Verificar que la mesa esté disponible
+
             require_once __DIR__ . '/../models/MesaModel.php';
             $mesaModel = new MesaModel();
             $mesa = $mesaModel->getMesaById(intval($idMesa));
-            
+
+            // Verificar que la mesa existe y está activa
             if (!$mesa || !$mesa['activa']) {
                 http_response_code(400);
-                echo json_encode(['status'=>'error','message'=>'mesa_not_active', 'detail'=>'La mesa no está activa']);
+                echo json_encode(['status' => 'error', 'message' => 'mesa_not_active', 'detail' => 'La mesa no está activa']);
                 return;
             }
-            
+
+            // Verificar que la mesa no esté ocupada
             if ($mesa['estado'] === 'Ocupada') {
                 http_response_code(400);
-                echo json_encode(['status'=>'error','message'=>'mesa_occupied', 'detail'=>'La mesa ya está Ocupada']);
+                echo json_encode(['status' => 'error', 'message' => 'mesa_occupied', 'detail' => 'La mesa ya está Ocupada']);
                 return;
             }
-            
+
             $ok = $res->confirm(intval($id), intval($idMesa));
         } else {
             $ok = $res->confirm(intval($id));
         }
-        
-        echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo confirmar']);
+
+        echo $ok ? json_encode(['status' => 'ok']) : json_encode(['status' => 'error', 'message' => 'no se pudo confirmar']);
     }
 
-     /*
-     * cancelar()
-     * Elimina (cancela) una reserva.
-     * Si la reserva tenía mesa asignada, la libera automáticamente.
+    /**
+     * Cancela una reserva existente.
+     * Valida que la reserva no esté ya cancelada.
      * 
-     * Validaciones:
-     * - La reserva debe existir
-     * - Solo se pueden cancelar reservas 'pendiente' o 'confirmada'
-     * 
-     * @return void - Retorna JSON
+     * @return void Envía respuesta JSON con resultado de la operación
      */
-    public function cancelar() {
+    public function cancelar()
+    {
         header('Content-Type: application/json; charset=utf-8');
+
         $id = isset($_POST['id']) ? trim($_POST['id']) : null;
-        
-        if (!$id || !ctype_digit($id)) { 
-            http_response_code(400); 
-            echo json_encode(['status'=>'error','message'=>'missing_id']); 
-            return; 
+
+        // Validar ID
+        if (!$id || !ctype_digit($id)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'missing_id']);
+            return;
         }
-        
+
+        // Obtener reserva
         $res = new ReservaModel();
-        
-        // Verificar que la reserva existe
         $reserva = $res->getById(intval($id));
+
         if (!$reserva) {
             http_response_code(404);
-            echo json_encode(['status'=>'error','message'=>'reservation_not_found']);
+            echo json_encode(['status' => 'error', 'message' => 'reservation_not_found']);
             return;
         }
-        
-        // No permitir cancelar reservas ya canceladas
+
+        // Verificar que no esté ya cancelada
         if ($reserva['estado'] === 'cancelada') {
             http_response_code(400);
-            echo json_encode(['status'=>'error','message'=>'already_cancelled', 'detail'=>'La reserva ya fue cancelada']);
+            echo json_encode(['status' => 'error', 'message' => 'already_cancelled', 'detail' => 'La reserva ya fue cancelada']);
             return;
         }
-        
+
+        // Eliminar reserva
         $ok = $res->delete(intval($id));
-        echo $ok ? json_encode(['status'=>'ok']) : json_encode(['status'=>'error','message'=>'no se pudo eliminar reserva']);
+        echo $ok ? json_encode(['status' => 'ok']) : json_encode(['status' => 'error', 'message' => 'no se pudo eliminar reserva']);
     }
 
-     /*
-     * obtenerMesasDisponiblesPorFecha()
+    /**
+     * Obtiene las mesas activas y disponibles para una fecha específica.
+     * Valida que la fecha sea proporcionada.
      * 
-     * Endpoint para obtener las mesas disponibles para una fecha específica.
-     * Implementa la nueva lógica de disponibilidad dinámica.
-     * 
-     * @return void - Retorna JSON con array de mesas disponibles
+     * @return void Envía respuesta JSON con mesas disponibles o error
      */
-    public function obtenerMesasDisponiblesPorFecha() {
+    public function obtenerMesasDisponiblesPorFecha()
+    {
         header('Content-Type: application/json; charset=utf-8');
-        
+
         try {
             $fecha = $_GET['fecha'] ?? null;
-            
+
+            // Validar fecha
             if (!$fecha) {
                 http_response_code(400);
-                echo json_encode(['status'=>'error','message'=>'missing_fecha']);
+                echo json_encode(['status' => 'error', 'message' => 'missing_fecha']);
                 return;
             }
-            
+
             error_log("Obteniendo mesas disponibles para fecha: $fecha");
-            
+
+            // Obtener mesas disponibles
             $res = new ReservaModel();
             $mesasDisponibles = $res->getMesasActivasYDisponibles($fecha);
-            
+
             error_log("Mesas disponibles encontradas: " . count($mesasDisponibles));
-            
+
             echo json_encode($mesasDisponibles);
         } catch (Exception $e) {
             error_log("Error en obtenerMesasDisponiblesPorFecha: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['status'=>'error','message'=>'exception', 'detail'=>$e->getMessage()]);
+            echo json_encode(['status' => 'error', 'message' => 'exception', 'detail' => $e->getMessage()]);
         }
     }
 
-     /*
-     * obtenerReservasPorFecha()
+    /**
+     * Obtiene todas las reservas de una fecha específica con información de mesas.
+     * Incluye detalles de mesa asignada para cada reserva.
      * 
-     * Endpoint para obtener todas las mesas con sus reservas para una fecha específica.
-     * 
-     * @return void - Retorna JSON
+     * @return void Envía respuesta JSON con reservas y mesas o error
      */
-    public function obtenerReservasPorFecha() {
+    public function obtenerReservasPorFecha()
+    {
         header('Content-Type: application/json; charset=utf-8');
-        
+
         try {
             $fecha = $_GET['fecha'] ?? null;
-            
+
+            // Validar fecha
             if (!$fecha) {
                 http_response_code(400);
-                echo json_encode(['status'=>'error','message'=>'missing_fecha']);
+                echo json_encode(['status' => 'error', 'message' => 'missing_fecha']);
                 return;
             }
-            
+
             error_log("Obteniendo reservas para fecha: $fecha");
-            
+
+            // Obtener reservas con información de mesas
             $res = new ReservaModel();
             $resultado = $res->getReservasPorFechaConMesas($fecha);
-            
+
             echo json_encode($resultado);
         } catch (Exception $e) {
             error_log("Error en obtenerReservasPorFecha: " . $e->getMessage());
             http_response_code(500);
-            echo json_encode(['status'=>'error','message'=>'exception', 'detail'=>$e->getMessage()]);
+            echo json_encode(['status' => 'error', 'message' => 'exception', 'detail' => $e->getMessage()]);
         }
     }
 }
 
+// Instanciar el controlador y ejecutar la acción solicitada
 $controller = new ReservaController();
 $action = $_GET['action'] ?? 'index';
+
 if (method_exists($controller, $action)) {
     $controller->$action();
 } else {
+    // Verificar si es una solicitud AJAX
     $isAjax = false;
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') $isAjax = true;
-    if (!$isAjax && !empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) $isAjax = true;
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        $isAjax = true;
+    }
+    if (!$isAjax && !empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+        $isAjax = true;
+    }
+
+    // Retornar error apropiado según el tipo de solicitud
     if ($isAjax) {
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(404);

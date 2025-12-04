@@ -11,7 +11,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <input type="text" class="form-control" id="descripcion" placeholder="Describe el evento...">
+                        <textarea class="form-control" id="descripcion" placeholder="Describe el evento..." rows="3" style="resize: none; overflow: hidden;"></textarea>
                     </div>
                 </div>
                 <div class="col-md-6">

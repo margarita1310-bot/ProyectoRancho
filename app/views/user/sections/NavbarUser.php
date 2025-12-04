@@ -1,19 +1,15 @@
-<!--Elementos del header-->
 <header>
     <nav class="navbar navbar-expand-lg">
         <div class="container-md">
-            <!--Icono de rancho-->
             <a id="principal" class="navbar-brand d-flex align-items-center" href="#principal">
                 <img src="/public/images/logo.jpg" alt="Logo" width="48" height="48" class="me-2">
                 Rancho La Joya
             </a>
-            <!--Menú responsivo-->
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarTogglerDemo02" aria-controls="navbarTogglerDemo02" aria-expanded="false" aria-label="Toggle navigation">
                 <span><i class="bi bi-list"></i></span>
             </button>
 
             <div class="collapse navbar-collapse" id="navbarTogglerDemo02">
-                <!--Enlaces a otras paginas-->
                 <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
                     <li class="nav-item">
                         <a class="nav-link" href="#promociones">Promociones</a>
@@ -25,7 +21,6 @@
                         <a class="nav-link" href="#menu">Menú</a>
                     </li>
                 </ul>
-                <!--Botón reservar-->
                 <a href="#reservar">
                     <button class="btn">Reservar una mesa</button>
                 </a>

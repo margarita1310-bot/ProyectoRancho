@@ -143,10 +143,7 @@ function showEmptyTable(tableId, message = 'No hay datos para mostrar') {
         <tr>
             <td colspan="100%" class="text-center py-4">
                 <div class="alert alert-info m-0" role="alert">
-                    <svg width="24" height="24" fill="currentColor" class="me-2">
-                        <use xlink:href="#info-fill"/>
-                    </svg>
-                    ${message}
+                    <i class="bi bi-info-circle"></i> ${message}
                 </div>
             </td>
         </tr>
@@ -154,105 +151,9 @@ function showEmptyTable(tableId, message = 'No hay datos para mostrar') {
 }
 
 /**
- * Confirmación mejorada para eliminar
+ * Nota: showToast, confirmDelete y setButtonLoading han sido removidas.
+ * Usar las funciones globales de utils.js en su lugar.
  */
-function confirmDelete(itemName, callback) {
-    const modal = document.getElementById('modal-eliminar');
-    if (!modal) {
-        // Fallback a confirm nativo
-        if (confirm(`¿Estás seguro de eliminar "${itemName}"?`)) {
-            callback();
-        }
-        return;
-    }
-    
-    // Actualizar mensaje del modal
-    const mensaje = modal.querySelector('.modal-body p');
-    if (mensaje) {
-        mensaje.innerHTML = `¿Estás seguro de que deseas eliminar <strong>"${itemName}"</strong>?<br><small class="text-muted">Esta acción no se puede deshacer.</small>`;
-    }
-    
-    // Configurar botón de confirmar
-    const btnConfirmar = modal.querySelector('#btn-confirmar-eliminar');
-    if (btnConfirmar) {
-        // Remover listeners anteriores clonando el botón
-        const newBtn = btnConfirmar.cloneNode(true);
-        btnConfirmar.parentNode.replaceChild(newBtn, btnConfirmar);
-        
-        newBtn.addEventListener('click', function() {
-            callback();
-            bootstrap.Modal.getInstance(modal).hide();
-        });
-    }
-    
-    // Mostrar modal
-    const bsModal = new bootstrap.Modal(modal);
-    bsModal.show();
-}
-
-/**
- * Toast notification
- */
-function showToast(message, type = 'success') {
-    const toastContainer = document.getElementById('toast-container') || createToastContainer();
-    
-    const toastHTML = `
-        <div class="toast align-items-center text-white bg-${type === 'success' ? 'success' : 'danger'} border-0" role="alert" aria-live="assertive" aria-atomic="true">
-            <div class="d-flex">
-                <div class="toast-body">
-                    <svg width="20" height="20" fill="currentColor" class="me-2">
-                        <use xlink:href="#${type === 'success' ? 'info-fill' : 'x-circle-fill'}"/>
-                    </svg>
-                    ${message}
-                </div>
-                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-            </div>
-        </div>
-    `;
-    
-    const div = document.createElement('div');
-    div.innerHTML = toastHTML;
-    const toastElement = div.firstElementChild;
-    toastContainer.appendChild(toastElement);
-    
-    const toast = new bootstrap.Toast(toastElement, { delay: 3000 });
-    toast.show();
-    
-    toastElement.addEventListener('hidden.bs.toast', () => {
-        toastElement.remove();
-    });
-}
-
-/**
- * Crear contenedor de toasts
- */
-function createToastContainer() {
-    const container = document.createElement('div');
-    container.id = 'toast-container';
-    container.className = 'toast-container position-fixed top-0 end-0 p-3';
-    container.style.zIndex = '9999';
-    document.body.appendChild(container);
-    return container;
-}
-
-/**
- * Loading en botón
- */
-function setButtonLoading(button, loading = true) {
-    if (!button) return;
-    
-    if (loading) {
-        button.dataset.originalText = button.innerHTML;
-        button.disabled = true;
-        button.innerHTML = `
-            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-            Procesando...
-        `;
-    } else {
-        button.disabled = false;
-        button.innerHTML = button.dataset.originalText || button.innerHTML;
-    }
-}
 
 /**
  * Validación de formulario con feedback visual

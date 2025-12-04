@@ -1,4 +1,3 @@
-<!--Inicio-->
 <div id="inicio" class="d-none">
     <div class="title">
         <h1 class="dashboard-title">
@@ -10,7 +9,7 @@
             </svg>
             Panel General
         </h1>
-        <p class="dashboard-subtitle">Resumen de actividades del restaurante</p>
+        <p class="dashboard-subtitle">Resumen de actividades del bar</p>
     </div>
 
     <!-- Alert de disponibilidad -->
@@ -24,7 +23,7 @@
         </div>
         <div class="alert-content">
             <strong>Atención</strong>
-            <p>Aún no has configurado la disponibilidad del restaurante hoy.</p>
+            <p>Aún no has configurado la disponibilidad del bar hoy.</p>
         </div>
         <button class="btn btn-config">Configurar Ahora</button>
     </div>

@@ -1,4 +1,3 @@
-// Navegación del sidebar y tooltips
 function mostrarContenido(id) {
     document.querySelectorAll('.content > div').forEach(div => div.classList.add('d-none'));
     const section = document.getElementById(id);
@@ -12,8 +11,6 @@ function mostrarContenido(id) {
         console.warn('No se pudo actualizar link activo:', e);
     }
 }
-
-// Sidebar toggle
 const btnMenu = document.getElementById("btn-menu");
 const sidebar = document.querySelector(".sidebar");
 const linksSidebar = document.querySelectorAll(".sidebar .nav-link");
@@ -33,12 +30,8 @@ linksSidebar.forEach(link => {
     document.body.classList.remove("sidebar-open");
   });
 });
-
-// Tooltips
 const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
 const tooltipList = [...tooltipTriggerList].map(el => new bootstrap.Tooltip(el));
-
-// Mostrar inicio por defecto
 document.addEventListener('DOMContentLoaded', () => {
     try { mostrarContenido('inicio'); } catch (e) {}
 });

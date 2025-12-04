@@ -54,27 +54,26 @@
             <?php include 'modals/editar-evento.php'; ?>
             <?php include 'modals/eliminar.php'; ?>
             <?php include 'modals/crear-disponibilidad-mesas.php'; ?>
+            <?php include 'modals/editar-disponibilidad-mesas.php'; ?>
             <?php include 'modals/perfil-admin.php'; ?>
-            <!-- Toast container -->
-            <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" aria-live="polite" aria-atomic="true"></div>
+            <div id="toast-container" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 9999;" aria-live="polite" aria-atomic="true"></div>
         </div>
     </div>
-    <!--Link Boostrap JS-->
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
-    <!--Script UX Improvements-->
-    <script src="/app/views/admin/js/ux-admin-improvements.js"></script>
-    <!--Script JS divididos por responsabilidad-->
+    
     <script src="/app/views/admin/js/utils.js"></script>
     <script src="/app/views/admin/js/nav.js"></script>
-    <script src="/app/views/admin/js/DashboardAdminJS.js"></script>
-    <script src="/app/views/admin/js/PerfilAdminJS.js"></script>
-    <script src="/app/views/admin/js/EliminarAdminJS.js"></script>
     <script src="/app/views/admin/js/EditarAdminJS.js"></script>
+    <script src="/app/views/admin/js/EliminarAdminJS.js"></script>
     <script src="/app/views/admin/js/ProductoAdminJS.js"></script>
     <script src="/app/views/admin/js/PromocionAdminJS.js"></script>
     <script src="/app/views/admin/js/EventoAdminJS.js"></script>
     <script src="/app/views/admin/js/DisponibilidadAdminJS.js"></script>
     <script src="/app/views/admin/js/ReservaAdminJS.js"></script>
     <script src="/app/views/admin/js/mesas.js"></script>
+    <script src="/app/views/admin/js/PerfilAdminJS.js"></script>
+    <script src="/app/views/admin/js/DashboardAdminJS.js"></script>
+    <script src="/app/views/admin/js/ux-admin-improvements.js"></script>
 </body>
 </html>

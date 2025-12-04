@@ -1,41 +1,48 @@
-/*
- * reservas.js
- * Maneja el formulario de reservas del usuario
- */
 
 document.addEventListener('DOMContentLoaded', () => {
     const formReserva = document.getElementById('form-reserva');
     const inputFecha = document.getElementById('fecha');
     const selectMesa = document.getElementById('id_mesa');
     const inputHora = document.getElementById('hora');
-    const helpHora = document.getElementById('hora-help');
     
     if (formReserva) {
         formReserva.addEventListener('submit', manejarEnvioReserva);
     }
 
-    // Configurar fecha mínima (hoy)
     if (inputFecha) {
         const hoy = new Date().toISOString().split('T')[0];
         inputFecha.setAttribute('min', hoy);
-        
-        // Cargar mesas cuando cambie la fecha y aplicar horario
         inputFecha.addEventListener('change', (e) => { 
             aplicarHorarioPorDia();
             cargarMesasDisponibles();
         });
-        // Si ya hay fecha cargada
         if (inputFecha.value) aplicarHorarioPorDia();
     }
 
-    // Inicializar hora deshabilitada si no hay fecha
     if (inputHora && !inputFecha.value) {
         inputHora.disabled = true;
-        if (helpHora) helpHora.textContent = 'Selecciona una fecha para ver el horario disponible.';
+    }
+    if (inputHora) {
+        inputHora.addEventListener('change', validarHoraEnTiempoReal);
+        inputHora.addEventListener('blur', normalizarFormatoHora);
+        inputHora.addEventListener('change', normalizarFormatoHora);
     }
 });
 
-// Horario por día (0=Domingo ... 6=Sábado)
+function normalizarFormatoHora(e) {
+    const input = e.target;
+    if (!input.value) return;
+    const partes = input.value.split(':');
+    if (partes.length === 3) {
+        input.value = `${partes[0]}:${partes[1]}`;
+    }
+    if (partes.length >= 2) {
+        const horas = String(partes[0]).padStart(2, '0');
+        const minutos = String(partes[1]).padStart(2, '0');
+        input.value = `${horas}:${minutos}`;
+    }
+}
+
 const HORARIO_DIA = {
     0: { abierto: true,  min: '15:00', max: '21:00', label: 'Domingo 3:00 pm - 9:00 pm' },
     1: { abierto: true,  min: '11:00', max: '22:00', label: 'Lunes 11:00 am - 10:00 pm' },
@@ -49,7 +56,6 @@ const HORARIO_DIA = {
 function aplicarHorarioPorDia() {
     const inputFecha = document.getElementById('fecha');
     const inputHora = document.getElementById('hora');
-    const help = document.getElementById('hora-help');
     if (!inputFecha || !inputHora) return;
 
     inputHora.value = '';
@@ -59,7 +65,6 @@ function aplicarHorarioPorDia() {
         inputHora.removeAttribute('min');
         inputHora.removeAttribute('max');
         inputHora.removeAttribute('step');
-        if (help) help.textContent = 'Selecciona una fecha para ver el horario disponible.';
         return;
     }
     const d = new Date(val + 'T00:00:00');
@@ -70,14 +75,60 @@ function aplicarHorarioPorDia() {
         inputHora.removeAttribute('min');
         inputHora.removeAttribute('max');
         inputHora.removeAttribute('step');
-        if (help) help.textContent = cfg && cfg.label ? cfg.label : 'Cerrado';
         return;
     }
     inputHora.disabled = false;
     inputHora.setAttribute('min', cfg.min);
     inputHora.setAttribute('max', cfg.max);
-    inputHora.setAttribute('step', '1800'); // 30 minutos
-    if (help) help.textContent = 'Horario disponible: ' + cfg.label;
+    inputHora.setAttribute('step', '1800');
+    
+    const alertaHora = inputHora.closest('.mb-3').querySelector('.alert-info');
+    if (alertaHora) {
+        alertaHora.style.display = 'none';
+    }
+    inputHora.addEventListener('change', function() {
+        const alertaHora = this.closest('.mb-3').querySelector('.alert-info');
+        if (alertaHora && this.value) {
+            alertaHora.style.display = 'none';
+        }
+    }, { once: true });
+}
+
+function validarHoraEnTiempoReal() {
+    const inputFecha = document.getElementById('fecha');
+    const inputHora = document.getElementById('hora');
+    
+    if (!inputFecha || !inputHora || !inputFecha.value || !inputHora.value) return;
+    
+    const fecha = inputFecha.value;
+    const hora = inputHora.value;
+    
+    const d = new Date(fecha + 'T00:00:00');
+    const dow = d.getDay();
+    const cfg = HORARIO_DIA[dow];
+    
+    if (!cfg || !cfg.abierto) return;
+    
+    const toMin = (hm) => { const [h,m] = hm.split(':').map(Number); return h*60 + (m||0); };
+    const horaMin = toMin(hora);
+    const minPermitido = toMin(cfg.min);
+    const maxPermitido = toMin(cfg.max);
+    inputHora.classList.remove('is-valid', 'is-invalid');
+    const contenedor = inputHora.parentElement.parentElement;
+    const feedbacksAnteriores = contenedor.querySelectorAll('.invalid-feedback');
+    feedbacksAnteriores.forEach(fb => fb.remove());
+    
+    if (horaMin < minPermitido || horaMin > maxPermitido) {
+        inputHora.classList.add('is-invalid');
+        const feedback = document.createElement('div');
+        feedback.className = 'invalid-feedback';
+        feedback.textContent = `La hora debe estar entre ${cfg.min} y ${cfg.max} para ${cfg.label.split(' ')[0]}.`;
+        contenedor.appendChild(feedback);
+    } else {
+        inputHora.classList.add('is-valid');
+        const feedbacksRestantes = contenedor.querySelectorAll('.invalid-feedback');
+        feedbacksRestantes.forEach(fb => fb.remove());
+    }
 }
 
 async function cargarMesasDisponibles() {
@@ -93,8 +144,12 @@ async function cargarMesasDisponibles() {
         return;
     }
     
+    const alertaMesa = selectMesa.closest('.mb-3').querySelector('.alert-info');
+    if (alertaMesa) {
+        alertaMesa.style.display = 'none';
+    }
+    
     try {
-        // Mostrar mensaje de carga
         selectMesa.innerHTML = '<option selected disabled value="">Cargando mesas...</option>';
         selectMesa.disabled = true;
         
@@ -105,7 +160,6 @@ async function cargarMesasDisponibles() {
         console.log('Response status:', response.status);
         console.log('Response headers:', response.headers.get('content-type'));
         
-        // Leer la respuesta como texto primero para debugging
         const responseText = await response.text();
         console.log('Response text:', responseText);
         
@@ -113,7 +167,6 @@ async function cargarMesasDisponibles() {
             throw new Error(`Error del servidor: ${response.status}`);
         }
         
-        // Intentar parsear como JSON
         let mesas;
         try {
             mesas = JSON.parse(responseText);
@@ -122,8 +175,6 @@ async function cargarMesasDisponibles() {
             console.error('Respuesta recibida:', responseText);
             throw new Error('El servidor no devolvió un JSON válido');
         }
-        
-        // Limpiar select
         selectMesa.innerHTML = '';
         
         if (mesas.length === 0) {
@@ -131,23 +182,25 @@ async function cargarMesasDisponibles() {
             return;
         }
         
-        // Agregar opción por defecto
         const optionDefault = document.createElement('option');
         optionDefault.value = '';
         optionDefault.textContent = 'Selecciona una mesa';
         optionDefault.selected = true;
         optionDefault.disabled = true;
         selectMesa.appendChild(optionDefault);
-        
-        // Agregar mesas disponibles
         mesas.forEach(mesa => {
             const option = document.createElement('option');
             option.value = mesa.id_mesa;
             option.textContent = `Mesa ${mesa.numero}`;
             selectMesa.appendChild(option);
         });
-        
         selectMesa.disabled = false;
+        selectMesa.addEventListener('change', function() {
+            const alertaMesa = this.closest('.mb-3').querySelector('.alert-info');
+            if (alertaMesa && this.value) {
+                alertaMesa.style.display = 'none';
+            }
+        }, { once: true });
         
     } catch (error) {
         console.error('Error al cargar mesas:', error);
@@ -159,7 +212,6 @@ async function cargarMesasDisponibles() {
 async function manejarEnvioReserva(e) {
     e.preventDefault();
 
-    // Obtener datos del formulario
     const formData = new FormData(e.target);
     const datos = {
         nombre: formData.get('nombre'),
@@ -171,13 +223,11 @@ async function manejarEnvioReserva(e) {
         id_mesa: formData.get('id_mesa')
     };
 
-    // Validación básica
-    if (!datos.nombre || !datos.email || !datos.telefono || !datos.personas || !datos.fecha || !datos.hora) {
+    if (!datos.nombre || !datos.email || !datos.telefono || !datos.personas || !datos.fecha || !datos.hora || !datos.id_mesa) {
         mostrarMensaje('Por favor completa todos los campos.', 'error');
         return;
     }
 
-    // Validar hora dentro del horario del día
     const d = new Date(datos.fecha + 'T00:00:00');
     const dow = d.getDay();
     const cfg = HORARIO_DIA[dow] || { abierto: false };
@@ -192,35 +242,30 @@ async function manejarEnvioReserva(e) {
         return;
     }
 
-    // Validar email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(datos.email)) {
         mostrarMensaje('Por favor ingresa un email válido.', 'error');
         return;
     }
 
-    // Validar teléfono (10 dígitos)
     const telefonoRegex = /^\d{10}$/;
     if (!telefonoRegex.test(datos.telefono.replace(/\s|-/g, ''))) {
         mostrarMensaje('Por favor ingresa un teléfono válido de 10 dígitos.', 'error');
         return;
     }
 
-    // Validar número de personas
-    if (parseInt(datos.personas) < 1 || parseInt(datos.personas) > 20) {
-        mostrarMensaje('El número de personas debe estar entre 1 y 20.', 'error');
+    if (parseInt(datos.personas) < 1 || parseInt(datos.personas) > 10) {
+        mostrarMensaje('El número de personas debe estar entre 1 y 10.', 'error');
         return;
     }
 
     try {
-        // Deshabilitar botón de envío
         const btnSubmit = e.target.querySelector('button[type="submit"]');
         if (btnSubmit) {
             btnSubmit.disabled = true;
             btnSubmit.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Enviando...';
         }
 
-        // Enviar al backend
         const response = await fetch('/app/controllers/UserController.php?action=crearReserva', {
             method: 'POST',
             headers: {
@@ -237,13 +282,38 @@ async function manejarEnvioReserva(e) {
         if (resultado.status === 'ok') {
             mostrarMensaje('¡Reserva enviada exitosamente! Folio: ' + (resultado.folio || ''), 'success');
             
-            // Limpiar formulario
             e.target.reset();
+            const selectMesa = document.getElementById('id_mesa');
+            if (selectMesa) {
+                selectMesa.innerHTML = '<option selected disabled value="">Primero selecciona una fecha</option>';
+                selectMesa.disabled = false;
+            }
+            
+            const inputHora = document.getElementById('hora');
+            if (inputHora) {
+                inputHora.disabled = true;
+                inputHora.value = '';
+                inputHora.removeAttribute('min');
+                inputHora.removeAttribute('max');
+                inputHora.removeAttribute('step');
+                inputHora.classList.remove('is-valid', 'is-invalid');
+            }
+            
+            const mesaContainer = document.getElementById('id_mesa');
+            if (mesaContainer) {
+                const alertaMesa = mesaContainer.closest('.mb-3').querySelector('.alert-info');
+                if (alertaMesa) alertaMesa.style.display = '';
+            }
+            
+            const horaContainer = document.getElementById('hora');
+            if (horaContainer) {
+                const alertaHora = horaContainer.closest('.mb-3').querySelector('.alert-info');
+                if (alertaHora) alertaHora.style.display = '';
+            }
         } else {
             throw new Error(resultado.mensaje || 'Error al crear reserva');
         }
 
-        // Restaurar botón
         if (btnSubmit) {
             btnSubmit.disabled = false;
             btnSubmit.innerHTML = 'Reservar';
@@ -253,7 +323,6 @@ async function manejarEnvioReserva(e) {
         console.error('Error al enviar reserva:', error);
         mostrarMensaje('Error al enviar la reserva. Por favor intenta de nuevo.', 'error');
         
-        // Restaurar botón
         const btnSubmit = e.target.querySelector('button[type="submit"]');
         if (btnSubmit) {
             btnSubmit.disabled = false;
@@ -263,7 +332,6 @@ async function manejarEnvioReserva(e) {
 }
 
 function mostrarMensaje(mensaje, tipo) {
-    // Crear elemento de alerta
     const alerta = document.createElement('div');
     alerta.className = `alert alert-${tipo === 'error' ? 'danger' : 'success'} alert-dismissible fade show position-fixed`;
     alerta.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
@@ -271,11 +339,7 @@ function mostrarMensaje(mensaje, tipo) {
         ${mensaje}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-
-    // Agregar al body
     document.body.appendChild(alerta);
-
-    // Remover después de 5 segundos
     setTimeout(() => {
         alerta.remove();
     }, 5000);

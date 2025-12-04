@@ -1,33 +1,31 @@
 <?php
- /*
- * UserViewController.php
- * 
- * Controlador para mostrar vistas del área de usuario.
- * Punto de entrada principal para el sitio público.
- * 
- * NO requiere autenticación (público)
- */
 
-class UserViewController {
-    
-    /*
-     * index()
-     * Muestra el dashboard principal del usuario.
-     * @return void - Incluye vista DashboardUser.php
+/**
+ * Controlador de Vista de Usuario
+ * Gestiona la renderización de vistas para usuarios públicos
+ */
+class UserViewController
+{
+    /**
+     * Carga y renderiza el dashboard del usuario.
+     * Muestra la interfaz principal para que los usuarios realicen reservas.
+     * 
+     * @return void Renderiza la vista del dashboard de usuario
      */
-    public function index() {
+    public function index()
+    {
         require_once __DIR__ . '/../views/user/DashboardUser.php';
     }
 }
 
-// Enrutamiento
+// Instanciar el controlador y ejecutar la acción solicitada
 $controller = new UserViewController();
 $action = $_GET['action'] ?? 'index';
 
 if (method_exists($controller, $action)) {
     $controller->$action();
 } else {
-    // Por defecto, mostrar index
+    // Si la acción no existe, mostrar el index por defecto
     $controller->index();
 }
 ?>

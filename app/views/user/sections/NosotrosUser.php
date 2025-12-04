@@ -1,6 +1,4 @@
-<!--Sección de redes sociales-->
 <section id="nosotros" class="nosotros">
-    <!--Links a redes-->
     <div class="side-left">
         <h1>Síguenos</h1>
         <p class="usuario">@Rancho La Joya</p>
@@ -20,7 +18,6 @@
             </a>
         </div>
     </div>
-    <!--Galeria de imagenes-->
     <div class="side-right">
         <div class="galeria">
             <img src="/public/images/image-1.jpg" alt="Galería 1">

@@ -47,10 +47,10 @@
             <button type="button" class="filter-btn filter-btn-warning" data-filtro-producto="Cervezas">
                 🍺 Cervezas
             </button>
-            <button type="button" class="filter-btn filter-btn-info" data-filtro-producto="Cocteles">
+            <button type="button" class="filter-btn filter-btn-warning" data-filtro-producto="Cocteles">
                 🍸 Cocteles
             </button>
-            <button type="button" class="filter-btn filter-btn-danger" data-filtro-producto="Tacos">
+            <button type="button" class="filter-btn filter-btn-warning" data-filtro-producto="Tacos">
                 🌮 Tacos
             </button>
         </div>

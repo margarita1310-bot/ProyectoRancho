@@ -1,40 +1,35 @@
- /*
- * Promociones: crear / editar
- * Nota: La imagen es OPCIONAL en crear y editar
- * Si se proporciona, se valida en el servidor (MIME, tamaño)
- * Si NO se proporciona, simplemente no se sube archivo (no se guarda en BD)
- */
-
-// Variable global para almacenar todas las promociones
 let todasLasPromociones = [];
-
-/**
- * Configurar filtros de promociones
- */
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar promociones desde la tabla existente
     inicializarPromocionesDesdeTabla();
-    
-    // Cargar productos al iniciar
+    filtrarPromociones('todas');
     cargarProductosEnSelect();
-    
     const btnsFiltroPromocion = document.querySelectorAll('[data-filtro-promocion]');
     btnsFiltroPromocion.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Actualizar botón activo
             btnsFiltroPromocion.forEach(b => b.classList.remove('filter-btn-active'));
             btn.classList.add('filter-btn-active');
-            
-            // Filtrar
             const filtro = btn.getAttribute('data-filtro-promocion');
             filtrarPromociones(filtro);
         });
     });
+    const textareas = document.querySelectorAll('#modal-crear-promocion #descripcion, #modal-editar-promocion #descripcion');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+        const modal = textarea.closest('.modal-overlay');
+        if (modal) {
+            const observer = new MutationObserver(() => {
+                if (modal.classList.contains('active')) {
+                    textarea.style.height = 'auto';
+                    textarea.style.height = textarea.scrollHeight + 'px';
+                }
+            });
+            observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+        }
+    });
 });
-
-/**
- * Inicializa las promociones desde la tabla HTML existente
- */
 function inicializarPromocionesDesdeTabla() {
     const tbody = document.querySelector('#promocion tbody');
     if (!tbody) return;
@@ -100,13 +95,8 @@ function renderizarPromociones(promociones) {
     if (promociones.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center p-4">
-                    <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                            <use xlink:href="#info-fill"/>
-                        </svg>
-                        <div>No hay promociones para este filtro</div>
-                    </div>
+                <td colspan="7" class="text-center p-4 text-muted">
+                    No hay promociones para este filtro
                 </td>
             </tr>
         `;
@@ -185,13 +175,8 @@ async function cargarPromociones() {
         console.error('Error al cargar promociones:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center p-4">
-                    <div class="alert alert-danger d-inline-flex align-items-center mb-0" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                            <use xlink:href="#x-circle-fill"/>
-                        </svg>
-                        <div><strong>Error al cargar promociones.</strong> Intenta recargar la página.</div>
-                    </div>
+                <td colspan="7" class="text-center p-4 text-danger">
+                    Error al cargar promociones. Intenta recargar la página.
                 </td>
             </tr>
         `;
@@ -231,19 +216,12 @@ async function cargarProductosEnSelect() {
         console.error('Error al cargar productos:', error);
     }
 }
-
-/**
- * Obtener productos seleccionados de un select multiple
- */
 function getProductosSeleccionados(modalId) {
     const select = document.querySelector(`#${modalId} #productos`);
     if (!select) return [];
-    
     const selected = Array.from(select.selectedOptions);
     return selected.map(option => option.value);
 }
-
-// Crear nueva promoción
 const btnGuardarPromocion = document.getElementById('btn-guardar-promocion');
 if (btnGuardarPromocion) btnGuardarPromocion.addEventListener('click', (e) => {
     e.preventDefault();
@@ -256,37 +234,30 @@ if (btnGuardarPromocion) btnGuardarPromocion.addEventListener('click', (e) => {
     const estado = modal.querySelector('#estado') ? modal.querySelector('#estado').value : '';
     const imagenEl = modal.querySelector('#imagen');
     const productosSeleccionados = getProductosSeleccionados('modal-crear-promocion');
-
-    // Validar campos requeridos
     if (!nombre) {
-        showToast('error', 'El nombre es requerido');
+        showToast('error', '✗ El nombre es requerido');
         return;
     }
     if (!descripcion) {
-        showToast('error', 'La descripción es requerida');
+        showToast('error', '✗ La descripción es requerida');
         return;
     }
     if (!estado) {
-        showToast('error', 'Debes seleccionar un estado');
+        showToast('error', '✗ Debes seleccionar un estado');
         return;
     }
-
     let data = new FormData();
     data.append('nombre', nombre);
     data.append('descripcion', descripcion);
     data.append('fecha_inicio', fechaInicio);
     data.append('fecha_fin', fechaFin);
     data.append('estado', estado);
-    
-    // Agregar productos como array
     productosSeleccionados.forEach(id => {
         data.append('productos[]', id);
     });
-    
     if (imagenEl && imagenEl.files && imagenEl.files[0]) {
         data.append('imagen', imagenEl.files[0]);
     }
-
     fetch('/app/controllers/PromocionController.php?action=guardar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
         .then(async response => {
             const text = await response.text();
@@ -301,24 +272,31 @@ if (btnGuardarPromocion) btnGuardarPromocion.addEventListener('click', (e) => {
         })
         .then(resp => {
             if (resp && resp.status === 'ok') {
-                showToast('success', 'Promoción creada exitosamente');
+                showToast('success', '✓ Promoción creada exitosamente');
                 const form = document.getElementById('form-crear-promocion');
                 if (form) form.reset();
                 modal.classList.remove('active');
                 cargarPromociones();
             }
             else {
-                const errorMsg = resp.errors ? resp.errors.join(', ') : (resp.message || JSON.stringify(resp));
-                showToast('error','Error al crear promoción: ' + errorMsg);
+                let errorMsg = 'Error al crear promoción';
+                if (resp.message) errorMsg = resp.message;
+                else if (resp.errors && Array.isArray(resp.errors)) {
+                    if (resp.errors.includes('nombre_required')) errorMsg = 'El nombre de la promoción es requerido';
+                    else if (resp.errors.includes('descripcion_required')) errorMsg = 'La descripción es requerida';
+                    else if (resp.errors.includes('estado_required')) errorMsg = 'El estado es requerido';
+                    else if (resp.errors.includes('imagen_too_large')) errorMsg = 'La imagen es demasiado grande (máx. 2MB)';
+                    else if (resp.errors.includes('imagen_invalid_type')) errorMsg = 'Formato de imagen no válido (solo JPG/PNG)';
+                    else errorMsg = resp.errors.join(', ');
+                }
+                showToast('error','✗ ' + errorMsg);
             }
         })
         .catch(err => { 
             console.error('Error completo:', err); 
-            showToast('error','Error: ' + err.message); 
+            showToast('error','✗ Error: ' + err.message); 
         });
 });
-
-// Cancelar crear promoción
 const btnCancelarPromocion = document.getElementById('btn-cancelar-promocion');
 if (btnCancelarPromocion) btnCancelarPromocion.addEventListener('click', (e) => {
     e.preventDefault();
@@ -329,8 +307,6 @@ if (btnCancelarPromocion) btnCancelarPromocion.addEventListener('click', (e) => 
     const form = document.getElementById('form-crear-promocion');
     if (form) form.reset();
 });
-
-// Editar promoción existente
 const btnEditarPromocion = document.getElementById('btn-editar-promocion');
 if (btnEditarPromocion) btnEditarPromocion.addEventListener('click', (e) => {
     e.preventDefault();
@@ -344,7 +320,6 @@ if (btnEditarPromocion) btnEditarPromocion.addEventListener('click', (e) => {
     const estado = modal.querySelector('#estado') ? modal.querySelector('#estado').value : '';
     const imagenEl = modal.querySelector('#imagen');
     const productosSeleccionados = getProductosSeleccionados('modal-editar-promocion');
-
     let data = new FormData();
     data.append('id', id);
     data.append('nombre', nombre);
@@ -352,8 +327,6 @@ if (btnEditarPromocion) btnEditarPromocion.addEventListener('click', (e) => {
     data.append('fecha_inicio', fechaInicio);
     data.append('fecha_fin', fechaFin);
     data.append('estado', estado);
-    
-    // Agregar productos como array
     productosSeleccionados.forEach(id => {
         data.append('productos[]', id);
     });
@@ -366,13 +339,25 @@ if (btnEditarPromocion) btnEditarPromocion.addEventListener('click', (e) => {
         .then(parseResponse)
         .then(resp => {
             if (resp && resp.status === 'ok') {
-                showToast('success', 'Promoción actualizada exitosamente');
+                showToast('success', '✓ Promoción actualizada exitosamente');
                 modal.classList.remove('active');
                 cargarPromociones();
             }
-            else showToast('error','Error al actualizar promoción: ' + (resp.message || JSON.stringify(resp)));
+            else {
+                let errorMsg = 'Error al actualizar promoción';
+                if (resp.message) errorMsg = resp.message;
+                else if (resp.errors && Array.isArray(resp.errors)) {
+                    if (resp.errors.includes('id_required')) errorMsg = 'ID de la promoción no proporcionado';
+                    else if (resp.errors.includes('nombre_required')) errorMsg = 'El nombre de la promoción es requerido';
+                    else if (resp.errors.includes('descripcion_required')) errorMsg = 'La descripción es requerida';
+                    else if (resp.errors.includes('estado_required')) errorMsg = 'El estado es requerido';
+                    else if (resp.errors.includes('imagen_too_large')) errorMsg = 'La imagen es demasiado grande (máx. 2MB)';
+                    else if (resp.errors.includes('imagen_invalid_type')) errorMsg = 'Formato de imagen no válido (solo JPG/PNG)';
+                }
+                showToast('error','✗ ' + errorMsg);
+            }
         })
-        .catch(err => { console.error(err); showToast('error','Error de red al actualizar promoción'); });
+        .catch(err => { console.error(err); showToast('error','✗ Error de red al actualizar promoción'); });
 });
 
 // Cancelar editar promoción

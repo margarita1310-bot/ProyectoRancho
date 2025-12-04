@@ -1,138 +1,192 @@
 <?php
- /*
- * ProductoController.php
- * 
- * Controlador CRUD de Productos (menú del restaurante).
- * Gestiona la creación, lectura, actualización y eliminación de productos.
- * 
- * Acciones:
- * - index: GET - Lista todos los productos
- * - guardar: POST - Crea nuevo producto (nombre, precio, categoria, imagen)
- * - obtener: POST - Obtiene datos de un producto específico (JSON)
- * - actualizar: POST - Actualiza un producto existente (JSON)
- * - eliminar: POST - Elimina un producto (JSON)
- * 
- * Tabla de base de datos: producto (id_producto, nombre, precio, categoria)
- * 
- * Requiere: Autenticación de administrador (ensureAdmin())
- */
 
 require_once __DIR__ . '/../models/ProductoModel.php';
 require_once __DIR__ . '/Auth.php';
 
 ensureAdmin();
 
-class ProductoController {
-     /*
-     * index()
-     * Muestra la lista completa de productos.
-     * @return void - Incluye vista menu.php o retorna JSON si es AJAX
+/**
+ * Controlador de Productos
+ * Gestiona la creación, actualización, obtención y eliminación de productos
+ */
+class ProductoController
+{
+    /**
+     * Lista todos los productos del sistema.
+     * Si es solicitud AJAX, retorna productos en JSON.
+     * Si no, renderiza el dashboard administrativo.
+     * 
+     * @return void Envía respuesta JSON o renderiza vista
      */
-    public function index() {
+    public function index()
+    {
         $productoModel = new ProductoModel();
         $producto = $productoModel->getAll();
-        
-        // Si es petición AJAX, devolver JSON
+
+        // Verificar si es solicitud AJAX
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
             header('Content-Type: application/json; charset=utf-8');
             echo json_encode($producto);
             return;
         }
-        
-        // Si no es AJAX, mostrar vista completa
+
+        // Renderizar dashboard si no es AJAX
         require_once __DIR__ . '/../views/admin/DashboardAdmin.php';
     }
 
-     /*
-     * guardar()
-     * Crea un nuevo producto en la base de datos.
-     * @return void - Retorna JSON
+    /**
+     * Crea un nuevo producto con validación de datos.
+     * Valida nombre, precio (numérico y positivo) y categoría.
+     * 
+     * @return void Envía respuesta JSON con resultado de la operación
      */
-    public function guardar() {
+    public function guardar()
+    {
         header('Content-Type: application/json; charset=utf-8');
+
+        // Obtener datos del formulario
         $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : null;
         $precio = isset($_POST['precio']) ? trim($_POST['precio']) : null;
         $categoria = isset($_POST['categoria']) ? trim($_POST['categoria']) : null;
 
-        // Validar parámetros de texto
+        // Validar datos
         $errors = [];
-        if (!$nombre) $errors[] = 'nombre_required';
-        if (!$precio || !is_numeric($precio) || floatval($precio) < 0) $errors[] = 'precio_invalid';
-        if (!$categoria) $errors[] = 'categoria_required';
+        if (!$nombre) {
+            $errors[] = 'nombre_required';
+        }
+        if (!$precio || !is_numeric($precio) || floatval($precio) < 0) {
+            $errors[] = 'precio_invalid';
+        }
+        if (!$categoria) {
+            $errors[] = 'categoria_required';
+        }
 
-        if (!empty($errors)) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>$errors]); return; }
+        if (!empty($errors)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'errors' => $errors]);
+            return;
+        }
 
-        // Crear producto
+        // Crear producto en base de datos
         $producto = new ProductoModel();
         $ok = $producto->create($nombre, floatval($precio), $categoria);
-		header('Content-Type: application/json; charset=utf-8');
+
+        header('Content-Type: application/json; charset=utf-8');
         echo $ok ? json_encode(['status' => 'ok']) : json_encode(['status' => 'error', 'message' => 'no se pudo crear el producto']);
     }
 
-     /*
-     * obtener()
-     * Obtiene los datos de un producto específico por ID.
-     * @return void - Retorna JSON con datos del producto
+    /**
+     * Obtiene los datos de un producto específico por su ID.
+     * Valida que el ID sea numérico y positivo.
+     * 
+     * @return void Envía respuesta JSON con datos del producto o error
      */
-    public function obtener() {
+    public function obtener()
+    {
         $id = $_POST['id'] ?? null;
-        if (!$id || !ctype_digit($id)) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'missing_id']); return; }
+
+        // Validar ID
+        if (!$id || !ctype_digit($id)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'missing_id']);
+            return;
+        }
+
         header('Content-Type: application/json; charset=utf-8');
+
+        // Obtener y retornar producto
         $producto = new ProductoModel();
         echo json_encode($producto->getById(intval($id)));
     }
 
-     /*
-     * actualizar()
-     * Actualiza un producto existente en la base de datos.
-     * @return void - Retorna JSON
+    /**
+     * Actualiza los datos de un producto existente.
+     * Valida nombre, precio (numérico y positivo), categoría e ID del producto.
+     * 
+     * @return void Envía respuesta JSON con resultado de la operación
      */
-    public function actualizar() {
+    public function actualizar()
+    {
         header('Content-Type: application/json; charset=utf-8');
+
+        // Obtener datos del formulario
         $id = isset($_POST['id']) ? trim($_POST['id']) : null;
         $nombre = isset($_POST['nombre']) ? trim($_POST['nombre']) : null;
         $precio = isset($_POST['precio']) ? trim($_POST['precio']) : null;
         $categoria = isset($_POST['categoria']) ? trim($_POST['categoria']) : null;
 
-        // Validar parámetros
+        // Validar datos
         $errors = [];
-        if (!$id || !ctype_digit($id)) $errors[] = 'id_invalid';
-        if (!$nombre) $errors[] = 'nombre_required';
-        if (!$precio || !is_numeric($precio) || floatval($precio) < 0) $errors[] = 'precio_invalid';
-        if (!$categoria) $errors[] = 'categoria_required';
+        if (!$id || !ctype_digit($id)) {
+            $errors[] = 'id_invalid';
+        }
+        if (!$nombre) {
+            $errors[] = 'nombre_required';
+        }
+        if (!$precio || !is_numeric($precio) || floatval($precio) < 0) {
+            $errors[] = 'precio_invalid';
+        }
+        if (!$categoria) {
+            $errors[] = 'categoria_required';
+        }
 
-        if (!empty($errors)) { http_response_code(400); echo json_encode(['status'=>'error','errors'=>$errors]); return; }
+        if (!empty($errors)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'errors' => $errors]);
+            return;
+        }
 
-        // Actualizar producto
+        // Actualizar producto en base de datos
         $producto = new ProductoModel();
         $ok = $producto->update(intval($id), $nombre, floatval($precio), $categoria);
-		header('Content-Type: application/json; charset=utf-8');
+
+        header('Content-Type: application/json; charset=utf-8');
         echo $ok ? json_encode(['status' => 'ok']) : json_encode(['status' => 'error', 'message' => 'no se pudo actualizar el producto']);
     }
 
-     /*
-     * eliminar()
-     * Elimina un producto de la base de datos.
-     * @return void - Retorna JSON
+    /**
+     * Elimina un producto por su ID.
+     * Valida que el ID sea numérico y positivo.
+     * 
+     * @return void Envía respuesta JSON con resultado de la operación
      */
-    public function eliminar() {
+    public function eliminar()
+    {
         header('Content-Type: application/json; charset=utf-8');
+
         $id = $_POST['id'] ?? null;
-        if (!$id || !ctype_digit($id)) { http_response_code(400); echo json_encode(['status'=>'error','message'=>'missing_id']); return; }
+
+        // Validar ID
+        if (!$id || !ctype_digit($id)) {
+            http_response_code(400);
+            echo json_encode(['status' => 'error', 'message' => 'missing_id']);
+            return;
+        }
+
+        // Eliminar producto
         $producto = new ProductoModel();
         $ok = $producto->delete(intval($id));
         echo $ok ? json_encode(['status' => 'ok']) : json_encode(['status' => 'error', 'message' => 'no se pudo eliminar el producto']);
     }
 }
 
+// Instanciar el controlador y ejecutar la acción solicitada
 $controller = new ProductoController();
 $action = $_GET['action'] ?? 'index';
+
 if (method_exists($controller, $action)) {
     $controller->$action();
 } else {
+    // Verificar si es una solicitud AJAX
     $isAjax = false;
-    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') $isAjax = true;
-    if (!$isAjax && !empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) $isAjax = true;
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest') {
+        $isAjax = true;
+    }
+    if (!$isAjax && !empty($_SERVER['HTTP_ACCEPT']) && strpos($_SERVER['HTTP_ACCEPT'], 'application/json') !== false) {
+        $isAjax = true;
+    }
+
+    // Retornar error apropiado según el tipo de solicitud
     if ($isAjax) {
         header('Content-Type: application/json; charset=utf-8');
         http_response_code(404);

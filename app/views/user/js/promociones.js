@@ -1,7 +1,3 @@
-/*
- * promociones.js
- * Carga y muestra promociones activas desde la base de datos
- */
 
 document.addEventListener('DOMContentLoaded', cargarPromociones);
 
@@ -21,27 +17,20 @@ async function cargarPromociones() {
         if (!data || !Array.isArray(data)) {
             container.innerHTML = `
                 <div class="col-12">
-                    <div class="alert alert-info d-flex align-items-center" role="alert">
-                        <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Info:">
-                            <use xlink:href="#info-fill"/>
-                        </svg>
-                        <div>
-                            No hay promociones disponibles actualmente.
-                        </div>
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> No hay promociones disponibles actualmente.
                     </div>
                 </div>
             `;
             return;
         }
 
-        // Filtrar solo promociones activas/disponibles y vigentes
         const hoy = new Date();
         hoy.setHours(0, 0, 0, 0);
         
         const promocionesActivas = data.filter(promo => {
             if (promo.estado !== 'Disponible') return false;
             
-            // Verificar fecha de vigencia
             if (promo.fecha_fin) {
                 const fechaFin = new Date(promo.fecha_fin);
                 if (fechaFin < hoy) return false;
@@ -53,20 +42,14 @@ async function cargarPromociones() {
         if (promocionesActivas.length === 0) {
             container.innerHTML = `
                 <div class="col-12">
-                    <div class="alert alert-info d-flex align-items-center" role="alert">
-                        <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Info:">
-                            <use xlink:href="#info-fill"/>
-                        </svg>
-                        <div>
-                            No hay promociones disponibles en este momento.
-                        </div>
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> No hay promociones disponibles en este momento.
                     </div>
                 </div>
             `;
             return;
         }
         
-        // Renderizar promociones
         container.innerHTML = promocionesActivas.map(promo => `
             <div class="col-12 mb-4">
                 <div class="card card-promo-horizontal">
@@ -125,13 +108,8 @@ async function cargarPromociones() {
         console.error('Error al cargar promociones:', error);
         container.innerHTML = `
             <div class="col-12">
-                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                    <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Error:">
-                        <use xlink:href="#x-circle-fill"/>
-                    </svg>
-                    <div>
-                        <strong>Error al cargar las promociones.</strong> Por favor, intenta más tarde.
-                    </div>
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-x-circle"></i> <strong>Error al cargar las promociones.</strong> Por favor, intenta más tarde.
                 </div>
             </div>
         `;

@@ -1,4 +1,3 @@
-// Mesas: persistir disponibilidad vía API (DisponibilidadController.php)
 async function getMesas(fecha) {
     try {
         if (!fecha) fecha = new Date().toISOString().slice(0,10);
@@ -13,7 +12,6 @@ async function getMesas(fecha) {
         return [];
     }
 }
-
 async function renderMesas() {
     const tbody = document.getElementById('mesas-tbody');
     if (!tbody) return;
@@ -23,13 +21,8 @@ async function renderMesas() {
     if (!list || list.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="5" class="text-center p-4">
-                    <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                            <use xlink:href="#info-fill"/>
-                        </svg>
-                        <div>No hay disponibilidad registrada</div>
-                    </div>
+                <td colspan="5" class="text-center p-4 text-muted">
+                    No hay disponibilidad registrada
                 </td>
             </tr>
         `;
@@ -44,11 +37,9 @@ async function renderMesas() {
             let reservaAsignada = reservasForDate.find(r => r.mesa && parseInt(r.mesa,10) === i);
             let reservaPendiente = null;
             if (!reservaAsignada) reservaPendiente = reservasForDate.find(r => !r.mesa || r.mesa === '' || r.mesa === null);
-
             let cliente = '-';
             let hora = '';
             let accionesHtml = '';
-
             if (reservaAsignada) {
                 cliente = reservaAsignada.nombre || reservaAsignada.cliente || '-';
                 hora = reservaAsignada.hora || '';
@@ -58,7 +49,7 @@ async function renderMesas() {
                         <button class="btn btn-sm btn-decline-reserva" data-id="${reservaAsignada.id_reserva}">Cancelar</button>
                     `;
                 } else {
-                    accionesHtml = `<span class="badge bg-success">Confirmada</span> <button class="btn btn-sm btn-decline-reserva" data-id="${reservaAsignada.id_reserva}">Cancelar</button>`;
+                    accionesHtml = `<span class="badge badge-confirmada">Confirmada</span> <button class="btn btn-sm btn-decline-reserva" data-id="${reservaAsignada.id_reserva}">Cancelar</button>`;
                 }
             } else if (reservaPendiente) {
                 cliente = reservaPendiente.nombre || reservaPendiente.cliente || '-';
@@ -67,7 +58,6 @@ async function renderMesas() {
             } else {
                 accionesHtml = `<button class="btn btn-sm btn-edit-mesas" data-date="${item.date}">Editar Disponibilidad</button> <button class="btn btn-sm btn-delete-mesas" data-date="${item.date}">Eliminar Disponibilidad</button>`;
             }
-
             tr.innerHTML = `
                 <td>${i}</td>
                 <td>${cliente}</td>
@@ -82,31 +72,23 @@ async function renderMesas() {
         }
     });
 }
-
-// Inicializar campos del modal de mesas y handlers (usando API)
 document.addEventListener('DOMContentLoaded', () => {
-    // Solo ejecutar si estamos en la vista de mesas
     const mesasTBody = document.getElementById('mesas-tbody');
     if (!mesasTBody) return;
-    
     const fechaInput = document.getElementById('mesas-fecha');
     if (fechaInput) fechaInput.value = new Date().toISOString().slice(0,10);
-
     const hoy = new Date().toISOString().slice(0,10);
     window.reservasHoy = [];
     fetch(`/app/controllers/ReservaController.php?action=listar&fecha=${hoy}`, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
         .then(parseResponse)
         .then(data => { window.reservasHoy = data || []; renderMesas(); })
         .catch(err => { console.error('No se pudieron cargar reservas:', err); renderMesas(); });
-
     const btnCreateMesas = document.getElementById('btn-create-mesas');
     if (btnCreateMesas) btnCreateMesas.addEventListener('click', () => {
         const modal = document.getElementById('modal-create-mesas');
         if (modal) { modal.classList.remove('d-none'); modal.classList.add('active'); }
         const f = document.getElementById('mesas-fecha'); if (f) f.value = hoy;
     });
-
-    // Cancelar modal de disponibilidad
     const btnCancelarMesas = document.getElementById('btn-cancelar-mesas');
     if (btnCancelarMesas) btnCancelarMesas.addEventListener('click', (e) => {
         e.preventDefault();
@@ -115,8 +97,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('form-create-mesas');
         if (form) form.reset();
     });
-
-    // Guardar disponibilidad
     const btnGuardarMesas = document.getElementById('btn-guardar-mesas');
     if (btnGuardarMesas) btnGuardarMesas.addEventListener('click', (e) => {
         e.preventDefault();
@@ -126,7 +106,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fecha = f.value;
         const cantidad = parseInt(c.value || '0', 10);
         if (fecha !== hoy) return showToast('warning','Solo puedes agregar o actualizar la disponibilidad para hoy.');
-
         let data = new FormData(); data.append('fecha', fecha); data.append('cantidad', cantidad);
         fetch('/app/controllers/DisponibilidadController.php?action=guardar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
             .then(parseResponse)
@@ -142,8 +121,6 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .catch(err => { console.error(err); showToast('error','Error de red al guardar disponibilidad'); });
     });
-
-    // Delegación en tbody
     const mesasTbody = document.getElementById('mesas-tbody');
     mesasTbody && mesasTbody.addEventListener('click', async (e) => {
         const target = e.target;
@@ -161,7 +138,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (c) c.value = item.cantidad ?? item.count ?? 0;
             } catch (err) { console.error(err); showToast('error','Error al cargar registro de disponibilidad'); }
         }
-
         if (target.classList.contains('btn-delete-mesas')) {
             const date = target.dataset.date;
             try {
@@ -178,7 +154,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else showToast('error','Error al eliminar: ' + (resp.message || JSON.stringify(resp)));
             } catch (err) { console.error(err); showToast('error','Error de red al eliminar disponibilidad'); }
         }
-
         if (target.classList.contains('btn-assign-reserva')) {
             const id = target.dataset.id;
             const mesa = target.dataset.mesa;
@@ -189,7 +164,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(resp => { if (resp && resp.status === 'ok') { fetch(`/app/controllers/ReservaController.php?action=listar&fecha=${new Date().toISOString().slice(0,10)}`).then(parseResponse).then(d=>{window.reservasHoy=d||[]; renderMesas();}); } else showToast('error','Error al asignar: '+(resp.message||JSON.stringify(resp))); })
                 .catch(err => { console.error(err); showToast('error','Error de red al asignar reserva'); });
         }
-
         if (target.classList.contains('btn-confirm-reserva')) {
             const id = target.dataset.id;
             if (!id) return showToast('error','ID de reserva no encontrado');
@@ -199,11 +173,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(resp => { if (resp && resp.status === 'ok') { fetch(`/app/controllers/ReservaController.php?action=listar&fecha=${new Date().toISOString().slice(0,10)}`).then(parseResponse).then(d=>{window.reservasHoy=d||[]; renderMesas();}); } else showToast('error','Error al confirmar: '+(resp.message||JSON.stringify(resp))); })
                 .catch(err => { console.error(err); showToast('error','Error de red al confirmar reserva'); });
         }
-
         if (target.classList.contains('btn-decline-reserva')) {
             const id = target.dataset.id;
             if (!id) return showToast('error','ID de reserva no encontrado');
-            abrirDelete(id, 'Reservas', 'declinar', { title: 'Declinar reserva', message: '¿Seguro que quieres declinar (eliminar) esta reserva?' });
+            abrirEliminar(id, 'Reserva', 'cancelar', { title: 'Cancelar reserva', message: '¿Seguro que quieres cancelar esta reserva?' });
         }
     });
 });

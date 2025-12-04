@@ -1,44 +1,85 @@
- /*
- * Eventos: crear / editar
- * Nota: La imagen es OPCIONAL en crear y editar
- * Si se proporciona, se valida en el servidor (MIME, tamaño)
- * Si NO se proporciona, simplemente no se sube archivo (no se guarda en BD)
- */
-
-// Variable global para almacenar todos los eventos
 let todosLosEventos = [];
-
-/**
- * Configurar filtros de eventos
- */
+function normalizarHora(hora) {
+    if (!hora) return hora;
+    const partes = hora.split(':');
+    if (partes.length >= 2) {
+        return `${String(partes[0]).padStart(2, '0')}:${String(partes[1]).padStart(2, '0')}`;
+    }
+    return hora;
+}
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar eventos desde la tabla existente
     inicializarEventosDesdeTabla();
-    
+    filtrarEventos('todos');
     const btnsFiltroEvento = document.querySelectorAll('[data-filtro-evento]');
     btnsFiltroEvento.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Actualizar botón activo
             btnsFiltroEvento.forEach(b => b.classList.remove('filter-btn-active'));
             btn.classList.add('filter-btn-active');
-            
-            // Filtrar
             const filtro = btn.getAttribute('data-filtro-evento');
             filtrarEventos(filtro);
         });
     });
+    normalizarInputsHora();
+    const textareas = document.querySelectorAll('#modal-crear-evento #descripcion, #modal-editar-evento #descripcion');
+    textareas.forEach(textarea => {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+        const modal = textarea.closest('.modal-overlay');
+        if (modal) {
+            const observer = new MutationObserver(() => {
+                if (modal.classList.contains('active')) {
+                    textarea.style.height = 'auto';
+                    textarea.style.height = textarea.scrollHeight + 'px';
+                }
+            });
+            observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+        }
+    });
 });
-
-/**
- * Inicializa los eventos desde la tabla HTML existente
- */
+function normalizarInputsHora() {
+    const normalizarHora = (input) => {
+        if (!input || !input.value) return;
+        const partes = input.value.split(':');
+        if (partes.length >= 2) {
+            const horas = String(partes[0]).padStart(2, '0');
+            const minutos = String(partes[1]).padStart(2, '0');
+            input.value = `${horas}:${minutos}`;
+        }
+    };
+    document.querySelectorAll('input[type="time"]').forEach(input => {
+        input.addEventListener('blur', function() {
+            normalizarHora(this);
+        });
+        input.addEventListener('change', function() {
+            normalizarHora(this);
+        });
+    });
+    const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) {
+                    const inputs = node.querySelectorAll ? node.querySelectorAll('input[type="time"]') : [];
+                    inputs.forEach(input => {
+                        input.addEventListener('blur', function() {
+                            normalizarHora(this);
+                        });
+                        input.addEventListener('change', function() {
+                            normalizarHora(this);
+                        });
+                    });
+                }
+            });
+        });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+}
 function inicializarEventosDesdeTabla() {
     const tbody = document.querySelector('#evento tbody');
     if (!tbody) return;
-    
     const filas = tbody.querySelectorAll('tr');
     todosLosEventos = [];
-    
     filas.forEach(fila => {
         const celdas = fila.querySelectorAll('td');
         if (celdas.length >= 5) {
@@ -56,14 +97,9 @@ function inicializarEventosDesdeTabla() {
         }
     });
 }
-
-/**
- * Filtrar eventos según criterio
- */
 function filtrarEventos(filtro) {
     let eventosFiltrados;
     const hoy = new Date().toISOString().split('T')[0];
-    
     if (filtro === 'todos') {
         eventosFiltrados = todosLosEventos;
     } else if (filtro === 'proximos') {
@@ -71,43 +107,40 @@ function filtrarEventos(filtro) {
     } else if (filtro === 'pasados') {
         eventosFiltrados = todosLosEventos.filter(e => e.fecha < hoy);
     }
-    
     renderizarEventos(eventosFiltrados);
 }
-
-/**
- * Renderizar tabla de eventos
- */
 function renderizarEventos(eventos) {
     const tbody = document.querySelector('#evento tbody');
     if (!tbody) return;
-    
     tbody.innerHTML = '';
-    
     if (eventos.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center p-4">
-                    <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                            <use xlink:href="#info-fill"/>
-                        </svg>
-                        <div>No hay eventos para este filtro</div>
-                    </div>
+                <td colspan="7" class="text-center p-4 text-muted">
+                    No hay eventos para este filtro
                 </td>
             </tr>
         `;
         return;
-    }
-    
+    }    
     eventos.forEach(ev => {
         const tr = document.createElement('tr');
+        const imagenHTML = ev.imagen 
+            ? `<img src="/public/images/evento/${ev.imagen}" 
+                    alt="${ev.nombre}" 
+                    class="img-thumbnail" 
+                    style="width: 60px; height: 60px; object-fit: cover;">`
+            : `<div class="d-flex align-items-center justify-content-center" 
+                    style="width: 60px; height: 60px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.25rem;">
+                   <small class="text-muted" style="font-size: 0.7rem; text-align: center;">Sin<br>imagen</small>
+               </div>`;
         tr.innerHTML = `
             <td>${ev.nombre}</td>
             <td>${ev.descripcion}</td>
             <td>${ev.fecha}</td>
             <td>${ev.hora_inicio}</td>
             <td>${ev.hora_fin || '-'}</td>
+            <td class="text-center">${imagenHTML}</td>
             <td class="text-center">
                 <div class="d-flex gap-1 justify-content-center flex-wrap">
                     <button class="btn btn-editar" data-id="${ev.id_evento}" data-controller="Evento">
@@ -121,14 +154,11 @@ function renderizarEventos(eventos) {
         `;
         tbody.appendChild(tr);
     });
-    
-    // Reactivar event listeners
     document.querySelectorAll('.btn-editar[data-controller="Evento"]').forEach(btn => {
         btn.addEventListener('click', () => {
             abrirEditar(btn.dataset.id, 'Evento');
         });
     });
-    
     document.querySelectorAll('.btn-eliminar[data-controller="Evento"]').forEach(btn => {
         btn.addEventListener('click', () => {
             abrirEliminar(btn.dataset.id, 'Evento', 'eliminar', {
@@ -138,49 +168,30 @@ function renderizarEventos(eventos) {
         });
     });
 }
-
-/**
- * Recarga dinámicamente la tabla de eventos
- */
 async function cargarEventos() {
     const tbody = document.querySelector('#evento tbody');
     if (!tbody) return;
-    
     try {
         const response = await fetch('/app/controllers/EventoController.php?action=index', {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-        
         if (!response.ok) throw new Error('Error al cargar eventos');
-        
         const eventos = await response.json();
-        
-        // Guardar todos los eventos
         todosLosEventos = eventos;
-        
-        // Renderizar con el filtro actual
         const btnActivo = document.querySelector('[data-filtro-evento].filter-btn-active');
         const filtroActual = btnActivo ? btnActivo.getAttribute('data-filtro-evento') : 'todos';
         filtrarEventos(filtroActual);
-        
     } catch (error) {
         console.error('Error al cargar eventos:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="text-center p-4">
-                    <div class="alert alert-danger d-inline-flex align-items-center mb-0" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                            <use xlink:href="#x-circle-fill"/>
-                        </svg>
-                        <div><strong>Error al cargar eventos.</strong> Intenta recargar la página.</div>
-                    </div>
+                <td colspan="6" class="text-center p-4 text-danger">
+                    Error al cargar eventos. Intenta recargar la página.
                 </td>
             </tr>
         `;
     }
 }
-
-// Crear nuevo evento
 const btnGuardarEvento = document.getElementById('btn-guardar-evento');
 if (btnGuardarEvento) btnGuardarEvento.addEventListener('click', (e) => {
     e.preventDefault();
@@ -192,33 +203,56 @@ if (btnGuardarEvento) btnGuardarEvento.addEventListener('click', (e) => {
     const horaInicio = modal.querySelector('#horaInicio') ? modal.querySelector('#horaInicio').value : '';
     const horaFin = modal.querySelector('#horaFin') ? modal.querySelector('#horaFin').value : '';
     const imagenEl = modal.querySelector('#imagen');
-
+    let horaInicioNormalizada = horaInicio;
+    let horaFinNormalizada = horaFin;
+    if (horaInicio) {
+        const partesInicio = horaInicio.split(':');
+        if (partesInicio.length >= 2) {
+            horaInicioNormalizada = `${String(partesInicio[0]).padStart(2, '0')}:${String(partesInicio[1]).padStart(2, '0')}`;
+        }
+    }
+    if (horaFin) {
+        const partesFin = horaFin.split(':');
+        if (partesFin.length >= 2) {
+            horaFinNormalizada = `${String(partesFin[0]).padStart(2, '0')}:${String(partesFin[1]).padStart(2, '0')}`;
+        }
+    }
     let data = new FormData();
     data.append('nombre', nombre);
     data.append('descripcion', descripcion);
     data.append('fecha', fecha);
-    data.append('hora_inicio', horaInicio);
-    if (horaFin) data.append('hora_fin', horaFin);
+    data.append('hora_inicio', horaInicioNormalizada);
+    if (horaFinNormalizada) data.append('hora_fin', horaFinNormalizada);
     if (imagenEl && imagenEl.files && imagenEl.files[0]) {
         data.append('imagen', imagenEl.files[0]);
     }
-
     fetch('/app/controllers/EventoController.php?action=guardar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
         .then(parseResponse)
         .then(resp => {
             if (resp && resp.status === 'ok') {
-                showToast('success', 'Evento creado exitosamente');
+                showToast('success', '✓ Evento creado exitosamente');
                 const form = document.getElementById('form-crear-evento');
                 if (form) form.reset();
                 modal.classList.remove('active');
                 cargarEventos();
             }
-            else showToast('error','Error al crear evento: ' + (resp.message || JSON.stringify(resp)));
+            else {
+                let errorMsg = 'Error al crear evento';
+                if (resp.errors && Array.isArray(resp.errors)) {
+                    if (resp.errors.includes('nombre_required')) errorMsg = 'El nombre del evento es requerido';
+                    else if (resp.errors.includes('fecha_invalid')) errorMsg = 'La fecha del evento no es válida';
+                    else if (resp.errors.includes('hora_inicio_invalid')) errorMsg = 'La hora de inicio no es válida';
+                    else if (resp.errors.includes('hora_fin_invalid')) errorMsg = 'La hora de fin no es válida';
+                    else if (resp.errors.includes('imagen_too_large')) errorMsg = 'La imagen es demasiado grande (máx. 2MB)';
+                    else if (resp.errors.includes('imagen_invalid_type')) errorMsg = 'Formato de imagen no válido (solo JPG/PNG)';
+                } else if (resp.message) {
+                    errorMsg = resp.message;
+                }
+                showToast('error', '✗ ' + errorMsg);
+            }
         })
-        .catch(err => { console.error(err); showToast('error','Error de red al crear evento'); });
+        .catch(err => { console.error(err); showToast('error','✗ Error de red al crear evento'); });
 });
-
-// Cancelar crear evento
 const btnCancelarEvento = document.getElementById('btn-cancelar-evento');
 if (btnCancelarEvento) btnCancelarEvento.addEventListener('click', (e) => {
     e.preventDefault();
@@ -229,8 +263,6 @@ if (btnCancelarEvento) btnCancelarEvento.addEventListener('click', (e) => {
     const form = document.getElementById('form-crear-evento');
     if (form) form.reset();
 });
-
-// Editar evento existente
 const btnEditarEvento = document.getElementById('btn-editar-evento');
 if (btnEditarEvento) btnEditarEvento.addEventListener('click', (e) => {
     e.preventDefault();
@@ -243,33 +275,44 @@ if (btnEditarEvento) btnEditarEvento.addEventListener('click', (e) => {
     const horaInicio = modal.querySelector('#horaInicio') ? modal.querySelector('#horaInicio').value : '';
     const horaFin = modal.querySelector('#horaFin') ? modal.querySelector('#horaFin').value : '';
     const imagenEl = modal.querySelector('#imagen');
-
+    const horaInicioNormalizada = normalizarHora(horaInicio);
+    const horaFinNormalizada = normalizarHora(horaFin);
     let data = new FormData();
     data.append('id', id);
     data.append('nombre', nombre);
     data.append('descripcion', descripcion);
     data.append('fecha', fecha);
-    data.append('hora_inicio', horaInicio);
-    if (horaFin) data.append('hora_fin', horaFin);
+    data.append('hora_inicio', horaInicioNormalizada);
+    if (horaFinNormalizada) data.append('hora_fin', horaFinNormalizada);
     if (imagenEl && imagenEl.files && imagenEl.files[0]) {
         data.append('imagen', imagenEl.files[0]);
     }
-
-    
     fetch('/app/controllers/EventoController.php?action=actualizar', { method: 'POST', headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
         .then(parseResponse)
         .then(resp => {
             if (resp && resp.status === 'ok') {
-                showToast('success', 'Evento actualizado exitosamente');
+                showToast('success', '✓ Evento actualizado exitosamente');
                 modal.classList.remove('active');
                 cargarEventos();
             }
-            else showToast('error','Error al actualizar evento: ' + (resp.message || JSON.stringify(resp)));
+            else {
+                let errorMsg = 'Error al actualizar evento';
+                if (resp.errors && Array.isArray(resp.errors)) {
+                    if (resp.errors.includes('id_required')) errorMsg = 'ID del evento no proporcionado';
+                    else if (resp.errors.includes('nombre_required')) errorMsg = 'El nombre del evento es requerido';
+                    else if (resp.errors.includes('fecha_invalid')) errorMsg = 'La fecha del evento no es válida';
+                    else if (resp.errors.includes('hora_inicio_invalid')) errorMsg = 'La hora de inicio no es válida';
+                    else if (resp.errors.includes('hora_fin_invalid')) errorMsg = 'La hora de fin no es válida';
+                    else if (resp.errors.includes('imagen_too_large')) errorMsg = 'La imagen es demasiado grande (máx. 2MB)';
+                    else if (resp.errors.includes('imagen_invalid_type')) errorMsg = 'Formato de imagen no válido (solo JPG/PNG)';
+                } else if (resp.message) {
+                    errorMsg = resp.message;
+                }
+                showToast('error', '✗ ' + errorMsg);
+            }
         })
-        .catch(err => { console.error(err); showToast('error','Error de red al actualizar evento'); });
+        .catch(err => { console.error(err); showToast('error','✗ Error de red al actualizar evento'); });
 });
-
-// Cancelar editar evento
 const btnCancelarEditarEvento = document.getElementById('btn-cancelar-editar-evento');
 if (btnCancelarEditarEvento) btnCancelarEditarEvento.addEventListener('click', (e) => {
     e.preventDefault();

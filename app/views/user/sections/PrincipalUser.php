@@ -1,4 +1,3 @@
-<!--Principal-->
 <section id="principal" class="img-principal">
     <div class="target">
         <h1>Rancho La Joya</h1>

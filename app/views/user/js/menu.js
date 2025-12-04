@@ -1,11 +1,7 @@
-/*
- * menu.js
- * Carga y muestra productos del menú con filtros de categoría
- */
 
 let productosCache = [];
-let vistaCompleta = true; // Estado del toggle
-let categoriaActual = null; // Categoría seleccionada
+let vistaCompleta = true;
+let categoriaActual = null;
 
 document.addEventListener('DOMContentLoaded', () => {
     cargarProductos();
@@ -29,13 +25,8 @@ async function cargarProductos() {
         if (!data || !Array.isArray(data)) {
             container.innerHTML = `
                 <div class="col-12">
-                    <div class="alert alert-info d-flex align-items-center" role="alert">
-                        <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Info:">
-                            <use xlink:href="#info-fill"/>
-                        </svg>
-                        <div>
-                            No hay productos disponibles en el menú.
-                        </div>
+                    <div class="alert alert-info" role="alert">
+                        <i class="bi bi-info-circle"></i> No hay productos disponibles en el menú.
                     </div>
                 </div>
             `;
@@ -49,13 +40,8 @@ async function cargarProductos() {
         console.error('Error al cargar productos:', error);
         container.innerHTML = `
             <div class="col-12">
-                <div class="alert alert-danger d-flex align-items-center" role="alert">
-                    <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Error:">
-                        <use xlink:href="#x-circle-fill"/>
-                    </svg>
-                    <div>
-                        <strong>Error al cargar el menú.</strong> Por favor, intenta más tarde.
-                    </div>
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-x-circle"></i> <strong>Error al cargar el menú.</strong> Por favor, intenta más tarde.
                 </div>
             </div>
         `;
@@ -98,16 +84,13 @@ function configurarToggleVista() {
 function aplicarFiltros() {
     let productosFiltrados = productosCache;
     
-    // Filtrar por categoría
     if (categoriaActual !== null) {
         productosFiltrados = productosCache.filter(p => 
             p.categoria && p.categoria.toLowerCase() === categoriaActual.toLowerCase()
         );
     }
-    
-    // Limitar cantidad si no es vista completa
     if (!vistaCompleta) {
-        productosFiltrados = productosFiltrados.slice(0, 6); // Mostrar solo 6 productos
+        productosFiltrados = productosFiltrados.slice(0, 6);
     }
     
     mostrarProductos(productosFiltrados);
@@ -120,13 +103,8 @@ function mostrarProductos(productos) {
     if (productos.length === 0) {
         container.innerHTML = `
             <div class="col-12">
-                <div class="alert alert-warning d-flex align-items-center" role="alert">
-                    <svg class="bi flex-shrink-0 me-3" width="24" height="24" role="img" aria-label="Warning:">
-                        <use xlink:href="#exclamation-triangle-fill"/>
-                    </svg>
-                    <div>
-                        <strong>No hay productos disponibles</strong> en esta categoría.
-                    </div>
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle"></i> No hay productos disponibles en esta categoría.
                 </div>
             </div>
         `;
@@ -150,12 +128,9 @@ function mostrarProductos(productos) {
 }
 
 function actualizarBotonActivo(btnId) {
-    // Remover clase active de todos los botones
     document.querySelectorAll('.btn-filter').forEach(btn => {
         btn.classList.remove('active');
     });
-    
-    // Agregar clase active al botón seleccionado
     const btnActivo = document.getElementById(btnId);
     if (btnActivo) btnActivo.classList.add('active');
 }

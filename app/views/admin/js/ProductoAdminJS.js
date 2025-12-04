@@ -1,41 +1,22 @@
- /*
- * Producto: crear / editar
- */
-
-// Variable global para almacenar todos los productos
 let todosLosProductos = [];
-
-/**
- * Configurar filtros de productos
- */
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicializar productos desde la tabla existente
     inicializarProductosDesdeTabla();
-    
+    filtrarProductos('todos');
     const btnsFiltroProducto = document.querySelectorAll('[data-filtro-producto]');
     btnsFiltroProducto.forEach(btn => {
         btn.addEventListener('click', () => {
-            // Actualizar botón activo
             btnsFiltroProducto.forEach(b => b.classList.remove('filter-btn-active'));
             btn.classList.add('filter-btn-active');
-            
-            // Filtrar
             const filtro = btn.getAttribute('data-filtro-producto');
             filtrarProductos(filtro);
         });
     });
 });
-
-/**
- * Inicializa los productos desde la tabla HTML existente
- */
 function inicializarProductosDesdeTabla() {
     const tbody = document.querySelector('#menu tbody');
     if (!tbody) return;
-    
     const filas = tbody.querySelectorAll('tr');
     todosLosProductos = [];
-    
     filas.forEach(fila => {
         const celdas = fila.querySelectorAll('td');
         if (celdas.length >= 3) {
@@ -51,13 +32,8 @@ function inicializarProductosDesdeTabla() {
         }
     });
 }
-
-/**
- * Filtrar productos según categoría
- */
 function filtrarProductos(filtro) {
     let productosFiltrados;
-    
     if (filtro === 'todos') {
         productosFiltrados = todosLosProductos;
     } else {
@@ -65,35 +41,22 @@ function filtrarProductos(filtro) {
             p.categoria && p.categoria === filtro
         );
     }
-    
     renderizarProductos(productosFiltrados);
 }
-
-/**
- * Renderizar tabla de productos
- */
 function renderizarProductos(productos) {
     const tbody = document.querySelector('#menu tbody');
-    if (!tbody) return;
-    
+    if (!tbody) return;  
     tbody.innerHTML = '';
-    
     if (productos.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center p-4">
-                    <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                            <use xlink:href="#info-fill"/>
-                        </svg>
-                        <div>No hay productos para este filtro</div>
-                    </div>
+                <td colspan="4" class="text-center p-4 text-muted">
+                    No hay productos para este filtro
                 </td>
             </tr>
         `;
         return;
     }
-    
     productos.forEach(p => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
@@ -113,15 +76,12 @@ function renderizarProductos(productos) {
         `;
         tbody.appendChild(tr);
     });
-    
-    // Reactivar event listeners para botones de editar y eliminar
     document.querySelectorAll('.btn-editar[data-controller="Producto"]').forEach(btn => {
         btn.addEventListener('click', () => {
             const id = btn.dataset.id;
             abrirEditar(id, 'Producto');
         });
     });
-    
     document.querySelectorAll('.btn-eliminar[data-controller="Producto"]').forEach(btn => {
         btn.addEventListener('click', () => {
             const id = btn.dataset.id;
@@ -132,49 +92,30 @@ function renderizarProductos(productos) {
         });
     });
 }
-
-/**
- * Recarga dinámicamente la tabla de productos
- */
 async function cargarProductos() {
     const tbody = document.querySelector('#menu tbody');
     if (!tbody) return;
-    
     try {
         const response = await fetch('/app/controllers/ProductoController.php?action=index', {
             headers: { 'X-Requested-With': 'XMLHttpRequest' }
         });
-        
         if (!response.ok) throw new Error('Error al cargar productos');
-        
         const productos = await response.json();
-        
-        // Guardar todos los productos
         todosLosProductos = productos;
-        
-        // Renderizar con el filtro actual
         const btnActivo = document.querySelector('[data-filtro-producto].filter-btn-active');
         const filtroActual = btnActivo ? btnActivo.getAttribute('data-filtro-producto') : 'todos';
         filtrarProductos(filtroActual);
-        
     } catch (error) {
         console.error('Error al cargar productos:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center p-4">
-                    <div class="alert alert-danger d-inline-flex align-items-center mb-0" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                            <use xlink:href="#x-circle-fill"/>
-                        </svg>
-                        <div><strong>Error al cargar productos.</strong> Intenta recargar la página.</div>
-                    </div>
+                <td colspan="4" class="text-center p-4 text-danger">
+                    Error al cargar productos. Intenta recargar la página.
                 </td>
             </tr>
         `;
     }
 }
-
-// Crear nuevo producto
 const btnGuardarProducto = document.getElementById("btn-guardar-producto");
 if (btnGuardarProducto) btnGuardarProducto.onclick = (e) => {
     e.preventDefault();
@@ -183,28 +124,33 @@ if (btnGuardarProducto) btnGuardarProducto.onclick = (e) => {
     const nombre = modal.querySelector("#nombre") ? modal.querySelector("#nombre").value : '';
     const precio = modal.querySelector("#precio") ? modal.querySelector("#precio").value : '';
     const categoria = modal.querySelector("#categoria") ? modal.querySelector("#categoria").value : '';
-
     let data = new FormData();
     data.append("nombre", nombre);
     data.append("precio", precio);
     data.append("categoria", categoria);
-
     fetch("/app/controllers/ProductoController.php?action=guardar", { method: "POST", headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data})
     .then(parseResponse)
     .then(resp => {
         if (resp && resp.status === 'ok') {
-            showToast('success', 'Producto creado exitosamente');
+            showToast('success', '✓ Producto creado exitosamente');
             const form = document.getElementById('form-crear-producto');
             if (form) form.reset();
             modal.classList.remove('active');
             cargarProductos();
         }
-        else showToast('error', 'Error al crear producto: ' + (resp.message || JSON.stringify(resp)));
+        else {
+            let errorMsg = 'Error al crear producto';
+            if (resp.message) errorMsg = resp.message;
+            else if (resp.errors && Array.isArray(resp.errors)) {
+                if (resp.errors.includes('nombre_required')) errorMsg = 'El nombre del producto es requerido';
+                else if (resp.errors.includes('precio_invalid')) errorMsg = 'El precio no es válido';
+                else if (resp.errors.includes('categoria_required')) errorMsg = 'La categoría es requerida';
+            }
+            showToast('error', '✗ ' + errorMsg);
+        }
     })
-    .catch(err => { console.error(err); showToast('error', 'Error de red al crear producto'); });
+    .catch(err => { console.error(err); showToast('error', '✗ Error de red al crear producto'); });
 };
-
-// Cancelar crear producto
 const btnCancelarProducto = document.getElementById('btn-cancelar-producto');
 if (btnCancelarProducto) btnCancelarProducto.addEventListener('click', (e) => {
     e.preventDefault();
@@ -215,8 +161,6 @@ if (btnCancelarProducto) btnCancelarProducto.addEventListener('click', (e) => {
     const form = document.getElementById('form-crear-producto');
     if (form) form.reset();
 });
-
-// Editar producto existente
 const btnEditarProducto = document.getElementById("btn-editar-producto");
 if (btnEditarProducto) btnEditarProducto.onclick = (e) => {
     e.preventDefault();
@@ -226,27 +170,33 @@ if (btnEditarProducto) btnEditarProducto.onclick = (e) => {
     const nombre = modal.querySelector("#nombre") ? modal.querySelector("#nombre").value : '';
     const precio = modal.querySelector("#precio") ? modal.querySelector("#precio").value : '';
     const categoria = modal.querySelector("#categoria") ? modal.querySelector("#categoria").value : '';
-
     let data = new FormData();
     data.append("id", id);
     data.append("nombre", nombre);
     data.append("precio", precio);
     data.append("categoria", categoria);
-
     fetch("/app/controllers/ProductoController.php?action=actualizar", { method: "POST", headers: { 'X-Requested-With': 'XMLHttpRequest' }, body: data })
     .then(parseResponse)
     .then(resp => {
         if (resp && resp.status === 'ok') {
-            showToast('success', 'Producto actualizado exitosamente');
+            showToast('success', '✓ Producto actualizado exitosamente');
             modal.classList.remove('active');
             cargarProductos();
         }
-        else showToast('error', 'Error al actualizar producto: ' + (resp.message || JSON.stringify(resp)));
+        else {
+            let errorMsg = 'Error al actualizar producto';
+            if (resp.message) errorMsg = resp.message;
+            else if (resp.errors && Array.isArray(resp.errors)) {
+                if (resp.errors.includes('id_required')) errorMsg = 'ID del producto no proporcionado';
+                else if (resp.errors.includes('nombre_required')) errorMsg = 'El nombre del producto es requerido';
+                else if (resp.errors.includes('precio_invalid')) errorMsg = 'El precio no es válido';
+                else if (resp.errors.includes('categoria_required')) errorMsg = 'La categoría es requerida';
+            }
+            showToast('error', '✗ ' + errorMsg);
+        }
     })
-    .catch(err => { console.error(err); showToast('error', 'Error de red al actualizar producto'); });
+    .catch(err => { console.error(err); showToast('error', '✗ Error de red al actualizar producto'); });
 };
-
-// Cancelar editar producto
 const btnCancelarEditarProducto = document.getElementById('btn-cancelar-editar-producto');
 if (btnCancelarEditarProducto) btnCancelarEditarProducto.addEventListener('click', (e) => {
     e.preventDefault();

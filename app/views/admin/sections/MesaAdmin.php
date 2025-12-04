@@ -8,7 +8,7 @@
                 </svg>
                 Mesas
             </h1>
-            <p class="section-subtitle">Estado actual de las mesas del restaurante</p>
+            <p class="section-subtitle">Estado actual de las mesas del bar</p>
         </div>
         <button id="btn-crear-disponibilidad" class="btn-action-primary" onclick="document.getElementById('modal-create-mesas').classList.add('active'); document.getElementById('mesas-fecha').value = new Date().toISOString().slice(0,10);">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

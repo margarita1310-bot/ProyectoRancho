@@ -1,4 +1,3 @@
-<!--Elementos de las promociones-->
 <section id="promociones" class="promociones">
     <div class="side-left">
         <img src="/public/images/image-1.jpg" alt="Promociones">
@@ -10,7 +9,6 @@
         </p>
         
         <div id="promociones-container" class="row g-3">
-            <!-- Las promociones se cargarán dinámicamente aquí -->
             <p class="text-center w-100">Cargando promociones...</p>
         </div>
     </div>

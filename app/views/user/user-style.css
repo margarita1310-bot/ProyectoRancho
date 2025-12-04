@@ -1,4 +1,3 @@
-/*=== ESTILOS GENERALES ===*/
 * {
     margin: 0;
     padding: 0;
@@ -13,9 +12,23 @@ html {
 body {
     font-family: "Cabin", sans-serif;
     font-size: 16px;
-    background-color: #000;
+    background-color: #000000;
     overflow-x: hidden;
-    color: #fff;
+    color: #ffffff;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+button, a, input, select, textarea {
+    -webkit-tap-highlight-color: rgba(133, 69, 7, 0.3);
+    touch-action: manipulation;
+}
+
+@media (hover: none) and (pointer: coarse) {
+    button, a, .btn {
+        min-height: 44px;
+        min-width: 44px;
+    }
 }
 
 h1, h2 {
@@ -36,7 +49,6 @@ p {
     line-height: 1.6;
 }
 
-/*=== NAVBAR ===*/
 .navbar {
     background-color: #854507;
     padding: 8px clamp(16px, 5vw, 80px);
@@ -78,6 +90,11 @@ p {
     background-color: #200D02;
     transition: all 0.3s ease;
     transform: translateX(-50%);
+}
+
+.navbar-brand::after,
+.navbar a[href="#reservar"]::after {
+    display: none;
 }
 
 .navbar a:hover::after {
@@ -138,7 +155,7 @@ p {
 }
 
 .navbar-toggler i{
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .navbar-toggler-icon {
@@ -182,16 +199,42 @@ p {
     border-radius: 16px;
     padding: 16px 32px;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid #854507;
     display: inline-block;
     text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    font-weight: 600;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease, height 0.6s ease;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
 }
 
 .btn:hover {
     background-color: transparent;
     color: #854507;
-    transform: scale(1.02);
+    transform: scale(1.05) translateY(-2px);
+    box-shadow: 0 4px 12px rgba(133, 69, 7, 0.3);
+}
+
+.btn:active {
+    transform: scale(0.98) translateY(0);
 }
 
 .btn-filter {
@@ -255,12 +298,16 @@ p {
 
 #reservar .side-right {
     min-height: 300px;
+    position: relative;
+    overflow: hidden;
 }
 
 #reservar .side-right img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
 }
 
 #reservar h2 {
@@ -288,6 +335,7 @@ p {
     background-color: white;
     color: #200D02;
     transition: all 0.3s ease;
+    min-height: 42px;
 }
 
 #reservar .form-control:focus,
@@ -298,12 +346,28 @@ p {
     transform: translateY(-2px);
 }
 
-#reservar .form-control.is-valid {
+#reservar .form-control.is-valid,
+#reservar .form-select.is-valid {
     border-color: #28a745;
+    padding-right: 12px;
 }
 
-#reservar .form-control.is-invalid {
+#reservar .form-control.is-invalid,
+#reservar .form-select.is-invalid {
     border-color: #dc3545;
+    padding-right: 12px;
+}
+
+#reservar .form-control:invalid,
+#reservar .form-select:invalid {
+    box-shadow: none;
+}
+
+#reservar .invalid-feedback {
+    display: block;
+    margin-top: 6px;
+    font-size: 0.875rem;
+    color: #dc3545;
 }
 
 #reservar .btn {
@@ -325,12 +389,16 @@ p {
 
 #promociones .side-left {
     min-height: 300px;
+    position: relative;
+    overflow: hidden;
 }
 
 #promociones .side-left img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
 }
 
 #promociones .side-right {
@@ -369,12 +437,16 @@ p {
 
 #eventos .side-right {
     min-height: 300px;
+    position: relative;
+    overflow: hidden;
 }
 
 #eventos .side-right img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    object-position: center;
+    display: block;
 }
 
 #eventos .card {
@@ -616,7 +688,7 @@ footer iframe {
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 }
 
 .card-promo-horizontal:hover {
@@ -761,7 +833,7 @@ footer iframe {
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
 }
 
 .card-promo:hover {
@@ -822,7 +894,7 @@ footer iframe {
     overflow: hidden;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    background: linear-gradient(135deg, #fff 0%, #f0f8ff 100%);
+    background: linear-gradient(135deg, #ffffff 0%, #f0f8ff 100%);
 }
 
 .card-evento:hover {
@@ -899,27 +971,26 @@ footer iframe {
 }
 
 /*=== ALERTAS INFORMATIVAS ===*/
+.alert {
+    border-radius: 12px;
+    font-size: 15px;
+    padding: 16px;
+    border: none;
+}
+
 .alert-info {
     background: linear-gradient(135deg, #E3F2FD 0%, #BBDEFB 100%);
-    border: 2px solid #2196F3;
     color: #0D47A1;
-    font-size: clamp(13px, 2vw, 14px);
-    padding: 12px 16px;
-    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(13, 71, 161, 0.15);
 }
 
 .alert-info svg {
-    flex-shrink: 0;
     color: #2196F3;
 }
 
 .alert-danger {
     background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
-    border: 2px solid #F44336;
     color: #B71C1C;
-    font-size: clamp(13px, 2vw, 14px);
-    padding: 12px 16px;
-    border-radius: 12px;
 }
 
 .alert-danger svg {
@@ -929,11 +1000,7 @@ footer iframe {
 
 .alert-success {
     background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
-    border: 2px solid #4CAF50;
     color: #1B5E20;
-    font-size: clamp(13px, 2vw, 14px);
-    padding: 12px 16px;
-    border-radius: 12px;
 }
 
 .alert-success svg {
@@ -1002,6 +1069,16 @@ textarea:focus-visible {
     #eventos .side-right {
         order: -1;
         min-height: 250px;
+        max-height: 350px;
+    }
+    
+    #reservar .side-right img,
+    #promociones .side-left img,
+    #eventos .side-right img {
+        object-fit: cover;
+        object-position: center;
+        width: 100%;
+        height: 100%;
     }
     
     #nosotros {
@@ -1015,9 +1092,26 @@ textarea:focus-visible {
     
     /* Ajustar botones de filtros */
     .btn-filter {
+        font-size: 0.85rem;
+        padding: 10px 16px;
+        margin: 4px 2px;
+        white-space: nowrap;
+    }
+    
+    /* Ajustar toggle de vista completa */
+    .form-check-label {
         font-size: 0.9rem;
-        padding: 12px 20px;
-        margin: 3px;
+    }
+    
+    /* Mejorar layout de controles de menú */
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        align-items: center !important;
+        gap: 16px;
+    }
+    
+    .text-center.flex-grow-1 {
+        width: 100%;
     }
 }
 
@@ -1034,7 +1128,7 @@ textarea:focus-visible {
     }
     
     .target h1 {
-        font-size: 2.5rem;
+        font-size: 2rem;
     }
     
     #reservar,
@@ -1047,6 +1141,22 @@ textarea:focus-visible {
     #promociones .side-right,
     #eventos .side-left {
         padding: 24px;
+    }
+    
+    /* Imágenes responsivas en móvil */
+    #reservar .side-right,
+    #promociones .side-left,
+    #eventos .side-right {
+        min-height: 200px;
+        max-height: 300px;
+    }
+    
+    #reservar .side-right img,
+    #promociones .side-left img,
+    #eventos .side-right img {
+        object-fit: cover;
+        object-position: center;
+        border-radius: 16px 16px 0 0;
     }
     
     #nosotros {
@@ -1092,11 +1202,31 @@ textarea:focus-visible {
     
     /* Ajustar botones de filtros en móvil */
     .btn-filter {
-        font-size: 0.85rem;
-        padding: 10px 16px;
-        margin: 3px;
+        font-size: 0.75rem;
+        padding: 8px 12px;
+        margin: 3px 1px;
         width: auto;
         display: inline-block;
+        flex: 0 0 auto;
+    }
+    
+    /* Contenedor de filtros con scroll horizontal */
+    .text-center.flex-grow-1 {
+        overflow-x: auto;
+        overflow-y: hidden;
+        white-space: nowrap;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+        padding: 4px 0;
+    }
+    
+    .text-center.flex-grow-1::-webkit-scrollbar {
+        height: 4px;
+    }
+    
+    .text-center.flex-grow-1::-webkit-scrollbar-thumb {
+        background: rgba(133, 69, 7, 0.5);
+        border-radius: 4px;
     }
     
     /* Mejorar formulario de reservas en móvil */
@@ -1106,22 +1236,40 @@ textarea:focus-visible {
     }
     
     /* Ajustar cards de productos en móvil */
+    .card-menu-simple {
+        margin-bottom: 12px;
+    }
+    
     .card-menu-simple .card-body {
-        padding: 16px;
+        padding: 14px;
     }
     
     .producto-nombre {
-        font-size: 1rem;
-        min-height: 45px;
+        font-size: 0.95rem;
+        min-height: 42px;
     }
     
     .producto-precio-simple {
-        font-size: 1.25rem;
+        font-size: 1.15rem;
         padding: 6px 12px;
     }
     
+    /* Toggle de vista completa */
+    .form-check.form-switch {
+        padding-left: 2.5em;
+    }
+    
+    .form-check-input {
+        width: 2.5em;
+        height: 1.25em;
+    }
+    
+    .form-check-label {
+        font-size: 0.85rem;
+    }
+    
     /* Ajustar secciones de contenido */
-    .menu, #promociones, #eventos {
+    .menu {
         padding: 40px 0;
     }
     
@@ -1129,21 +1277,54 @@ textarea:focus-visible {
         font-size: 1.75rem;
         margin-bottom: 24px;
     }
+    
+    /* Cards de promociones responsivas */
+    .card-promo-horizontal .row {
+        flex-direction: column;
+    }
+    
+    .card-promo-horizontal .col-md-4,
+    .card-promo-horizontal .col-md-8 {
+        max-width: 100%;
+    }
+    
+    .card-promo-horizontal img,
+    .card-img-placeholder-horizontal {
+        min-height: 200px;
+        border-radius: 16px 16px 0 0 !important;
+    }
+    
+    .card-promo-horizontal .card-body {
+        padding: 20px;
+    }
+    
+    /* Ajustar navbar colapsado */
+    .navbar-collapse.show,
+    .navbar-collapse.collapsing {
+        background-color: rgba(133, 69, 7, 0.98);
+        padding: 12px;
+        border-radius: 8px;
+        margin-top: 8px;
+    }
 }
 
 /*=== RESPONSIVE - MÓVIL PEQUEÑO ===*/
 @media (max-width: 480px) {
     .target {
-        padding: 20px;
+        padding: 16px;
     }
     
     .target h1 {
-        font-size: 2rem;
+        font-size: 1.75rem;
+    }
+    
+    .target p {
+        font-size: 0.9rem;
     }
     
     .btn {
-        padding: 12px 20px;
-        font-size: 0.9rem;
+        padding: 10px 18px;
+        font-size: 0.85rem;
     }
     
     #nosotros .galeria {
@@ -1153,39 +1334,207 @@ textarea:focus-visible {
     
     /* Botones de filtro más compactos */
     .btn-filter {
-        font-size: 0.75rem;
-        padding: 8px 12px;
-        margin: 2px;
+        font-size: 0.7rem;
+        padding: 6px 10px;
+        margin: 2px 1px;
     }
     
     /* Ajustar cards de menú */
+    .card-menu-simple {
+        margin-bottom: 10px;
+    }
+    
     .card-menu-simple .card-body {
-        padding: 12px;
+        padding: 10px;
     }
     
     .producto-nombre {
-        font-size: 0.9rem;
-        min-height: 40px;
+        font-size: 0.85rem;
+        min-height: 38px;
+        line-height: 1.3;
     }
     
     .producto-precio-simple {
-        font-size: 1.1rem;
-        padding: 5px 10px;
+        font-size: 1rem;
+        padding: 4px 10px;
     }
     
     /* Ajustar títulos de secciones */
     h2 {
-        font-size: 1.5rem;
+        font-size: 1.4rem;
     }
     
     /* Mejorar espaciado en alertas */
     .alert {
-        font-size: 0.9rem;
-        padding: 12px;
+        font-size: 0.85rem;
+        padding: 10px;
     }
     
     .alert svg {
-        width: 20px;
-        height: 20px;
+        width: 18px;
+        height: 18px;
+    }
+    
+    /* Reducir padding en secciones */
+    .menu {
+        padding: 32px 0;
+    }
+    
+    #reservar,
+    #promociones,
+    #eventos {
+        margin: 20px 12px;
+    }
+    
+    /* Imágenes de secciones en móvil pequeño */
+    #reservar .side-right,
+    #promociones .side-left,
+    #eventos .side-right {
+        min-height: 180px;
+        max-height: 250px;
+    }
+    
+    #reservar .side-right img,
+    #promociones .side-left img,
+    #eventos .side-right img {
+        object-fit: cover;
+        object-position: center;
+    }
+    
+    /* Navbar más compacta */
+    .navbar {
+        padding: 6px 12px;
+    }
+    
+    .navbar-brand {
+        font-size: 1rem;
+    }
+    
+    .navbar img {
+        max-width: 40px;
+    }
+    
+    /* Formulario de reservas más compacto */
+    #reservar .side-left {
+        padding: 20px;
+    }
+    
+    #reservar .form-label {
+        font-size: 0.9rem;
+        margin-bottom: 6px;
+    }
+    
+    #reservar .input-group-text {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+    
+    #reservar .form-control,
+    #reservar .form-select {
+        padding: 8px 10px;
+        font-size: 16px;
+    }
+    
+    /* Toggle más pequeño */
+    .form-check-input {
+        width: 2.25em;
+        height: 1.15em;
+    }
+    
+    .form-check-label {
+        font-size: 0.8rem;
+    }
+    
+    /* Footer más compacto */
+    footer {
+        padding: 24px 12px;
+    }
+    
+    footer h1 {
+        font-size: 1.5rem;
+    }
+    
+    footer h2 {
+        font-size: 1.25rem;
+    }
+    
+    footer .mapa iframe {
+        width: 100%;
+        height: 180px;
+    }
+}
+
+/*=== RESPONSIVE - LANDSCAPE EN MÓVILES ===*/
+@media (max-height: 500px) and (orientation: landscape) {
+    .img-principal {
+        min-height: 100vh;
+        height: 100vh;
+    }
+    
+    .target {
+        padding: 16px;
+    }
+    
+    .target h1 {
+        font-size: 1.5rem;
+    }
+    
+    .target p {
+        font-size: 0.85rem;
+    }
+    
+    .navbar {
+        padding: 4px 16px;
+    }
+    
+    #reservar .side-left,
+    #promociones .side-right,
+    #eventos .side-left {
+        padding: 16px;
+    }
+    
+    /* Imágenes en landscape móvil */
+    #reservar .side-right,
+    #promociones .side-left,
+    #eventos .side-right {
+        min-height: 200px;
+        max-height: 280px;
+    }
+    
+    #reservar .side-right img,
+    #promociones .side-left img,
+    #eventos .side-right img {
+        object-fit: cover;
+        object-position: center;
+    }
+    
+    h2 {
+        font-size: 1.3rem;
+    }
+}
+
+/*=== RESPONSIVE - TABLETS GRANDES ===*/
+@media (min-width: 769px) and (max-width: 992px) {
+    .card-menu-simple {
+        margin-bottom: 16px;
+    }
+    
+    .btn-filter {
+        font-size: 0.9rem;
+        padding: 10px 18px;
+    }
+    
+    .container {
+        max-width: 90%;
+    }
+}
+
+/*=== MEJORAS PARA ACCESIBILIDAD ===*/
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
     }
 }

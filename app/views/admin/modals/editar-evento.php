@@ -12,7 +12,7 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <input type="text" id="descripcion" class="form-control">
+                        <textarea id="descripcion" class="form-control" rows="3" style="resize: none; overflow: hidden;"></textarea>
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -36,6 +36,10 @@
                         </div>
                     </div>
                     <h3>Imagen</h3>
+                    <div id="imagen-actual-info" class="alert alert-info mb-2 d-none" style="padding: 8px 12px;">
+                        <i class="bi bi-info-circle"></i>
+                        <span>Este evento tiene una imagen cargada. Puedes dejarla o subir una nueva.</span>
+                    </div>
                     <input type="file" id="imagen" class="form-control">
                 </div>
             </div>

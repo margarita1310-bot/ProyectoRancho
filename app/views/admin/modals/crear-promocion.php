@@ -11,14 +11,18 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Descripción</label>
-                        <input type="text" id="descripcion" class="form-control" placeholder="Describe la promoción...">
+                        <textarea id="descripcion" class="form-control" placeholder="Describe la promoción..." rows="3" style="resize: none; overflow: hidden;"></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Productos incluidos</label>
                         <select id="productos" class="form-select" multiple size="5">
                             <!-- Los productos se cargarán dinámicamente -->
                         </select>
-                        <small class="text-muted">Mantén presionado Ctrl/Cmd para seleccionar múltiples productos</small>
+                        <div class="col-12">
+                            <div class="alert alert-info" role="alert">
+                                <i class="bi bi-info-circle"></i> Mantén presionado Ctrl/Cmd para seleccionar múltiples productos.
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="col-md-6">

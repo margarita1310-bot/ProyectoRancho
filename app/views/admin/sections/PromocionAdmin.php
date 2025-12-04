@@ -8,7 +8,7 @@
                 </svg>
                 Promociones
             </h1>
-            <p class="section-subtitle">Gestiona las ofertas y promociones del restaurante</p>
+            <p class="section-subtitle">Gestiona las ofertas y promociones</p>
         </div>
         <button id="btn-crear-promocion" class="btn-action-primary" onclick="document.getElementById('modal-crear-promocion').classList.add('active')">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

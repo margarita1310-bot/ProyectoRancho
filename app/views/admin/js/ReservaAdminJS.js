@@ -70,13 +70,8 @@ async function cargarReservasPorFecha() {
         if (!resultado.disponibilidad) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center p-4">
-                        <div class="alert alert-warning d-inline-flex align-items-center mb-0" role="alert">
-                            <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                                <use xlink:href="#exclamation-triangle-fill"/>
-                            </svg>
-                            <div><strong>No hay disponibilidad configurada</strong> para esta fecha</div>
-                        </div>
+                    <td colspan="7" class="text-center p-4 text-warning">
+                        No hay disponibilidad configurada para esta fecha
                     </td>
                 </tr>
             `;
@@ -88,13 +83,8 @@ async function cargarReservasPorFecha() {
         if (resultado.mesas.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="7" class="text-center p-4">
-                        <div class="alert alert-info d-inline-flex align-items-center mb-0" role="alert">
-                            <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                                <use xlink:href="#info-fill"/>
-                            </svg>
-                            <div>No hay mesas activas para esta fecha</div>
-                        </div>
+                    <td colspan="7" class="text-center p-4 text-muted">
+                        No hay mesas activas para esta fecha
                     </td>
                 </tr>
             `;
@@ -112,9 +102,9 @@ async function cargarReservasPorFecha() {
             // Determinar badge de estado
             let estadoBadge = '<span class="text-muted">-</span>';
             if (fila.estado === 'pendiente') {
-                estadoBadge = '<span class="badge bg-warning text-dark">Pendiente</span>';
+                estadoBadge = '<span class="badge badge-pendiente">Pendiente</span>';
             } else if (fila.estado === 'confirmada') {
-                estadoBadge = '<span class="badge bg-success">Confirmada</span>';
+                estadoBadge = '<span class="badge badge-confirmada">Confirmada</span>';
             } else if (fila.estado === 'cancelada') {
                 estadoBadge = '<span class="badge bg-danger">Cancelada</span>';
             }
@@ -124,12 +114,12 @@ async function cargarReservasPorFecha() {
             if (fila.tiene_reserva && fila.estado) {
                 if (fila.estado === 'pendiente') {
                     acciones = `
-                        <button class="btn btn-confirmar-reserva btn-sm btn-success" 
+                        <button class="btn btn-confirmar-reserva btn-sm btn-confirmar-custom" 
                                 data-id="${fila.id_reserva}" 
                                 title="Confirmar reserva">
                             <i class="bi bi-check-circle"></i>
                         </button>
-                        <button class="btn btn-cancelar-reserva btn-sm btn-danger" 
+                        <button class="btn btn-cancelar-reserva btn-sm btn-cancelar-custom" 
                                 data-id="${fila.id_reserva}" 
                                 title="Cancelar reserva">
                             <i class="bi bi-x-circle"></i>
@@ -137,7 +127,7 @@ async function cargarReservasPorFecha() {
                     `;
                 } else if (fila.estado === 'confirmada') {
                     acciones = `
-                        <button class="btn btn-cancelar-reserva btn-sm btn-danger" 
+                        <button class="btn btn-cancelar-reserva btn-sm btn-cancelar-custom" 
                                 data-id="${fila.id_reserva}" 
                                 title="Cancelar reserva">
                             <i class="bi bi-x-circle"></i>
@@ -167,13 +157,8 @@ async function cargarReservasPorFecha() {
         console.error('Error al cargar reservas:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" class="text-center p-4">
-                    <div class="alert alert-danger d-inline-flex align-items-center mb-0" role="alert">
-                        <svg class="bi flex-shrink-0 me-2" width="20" height="20" role="img">
-                            <use xlink:href="#x-circle-fill"/>
-                        </svg>
-                        <div><strong>Error al cargar las reservas.</strong> Intenta de nuevo.</div>
-                    </div>
+                <td colspan="7" class="text-center p-4 text-danger">
+                    Error al cargar las reservas. Intenta de nuevo.
                 </td>
             </tr>
         `;
@@ -182,96 +167,98 @@ async function cargarReservasPorFecha() {
 
 // Confirmar reserva
 document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('btn-confirmar-reserva')) {
-        const idReserva = e.target.getAttribute('data-id');
-        
-        if (!idReserva) {
-            showToast('error', 'ID de reserva no válido');
-            return;
-        }
-
-        if (!confirm('¿Estás seguro de confirmar esta reserva?')) return;
-
-        const formData = new FormData();
-        formData.append('id', idReserva);
-
-        fetch('/app/controllers/ReservaController.php?action=confirmar', {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            body: formData
-        })
-        .then(async response => {
-            if (!response.ok) {
-                const text = await response.text();
-                console.error('Error response:', text);
-                throw new Error('Error del servidor');
-            }
-            return response.json();
-        })
-        .then(result => {
-            if (result.status === 'ok') {
-                showToast('success', 'Reserva confirmada correctamente');
-                cargarReservasPorFecha(); // Recargar tabla
-            } else if (result.message === 'reservation_not_pending') {
-                showToast('error', 'La reserva ya fue procesada anteriormente');
-            } else if (result.message === 'mesa_occupied') {
-                showToast('error', 'La mesa seleccionada ya está ocupada');
-            } else if (result.message === 'mesa_not_active') {
-                showToast('error', 'La mesa no está activa');
-            } else {
-                showToast('error', result.detail || result.message || 'Error al confirmar la reserva');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('error', 'Error al procesar la solicitud');
-        });
+    const btn = e.target.closest('.btn-confirmar-reserva');
+    if (!btn) return;
+    
+    const idReserva = btn.getAttribute('data-id');
+    
+    if (!idReserva) {
+        showToast('error', 'ID de reserva no válido');
+        return;
     }
+
+    if (!confirm('¿Estás seguro de confirmar esta reserva?')) return;
+
+    const formData = new FormData();
+    formData.append('id', idReserva);
+
+    fetch('/app/controllers/ReservaController.php?action=confirmar', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+    .then(async response => {
+        if (!response.ok) {
+            const text = await response.text();
+            console.error('Error response:', text);
+            throw new Error('Error del servidor');
+        }
+        return response.json();
+    })
+    .then(result => {
+        if (result.status === 'ok') {
+            showToast('success', 'Reserva confirmada correctamente');
+            cargarReservasPorFecha(); // Recargar tabla
+        } else if (result.message === 'reservation_not_pending') {
+            showToast('error', 'La reserva ya fue procesada anteriormente');
+        } else if (result.message === 'mesa_occupied') {
+            showToast('error', 'La mesa seleccionada ya está ocupada');
+        } else if (result.message === 'mesa_not_active') {
+            showToast('error', 'La mesa no está activa');
+        } else {
+            showToast('error', result.detail || result.message || 'Error al confirmar la reserva');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Error al procesar la solicitud');
+    });
 });
 
 // Cancelar reserva
 document.addEventListener('click', function(e) {
-    if (e.target.classList.contains('btn-cancelar-reserva')) {
-        const idReserva = e.target.getAttribute('data-id');
-        
-        if (!idReserva) {
-            showToast('error', 'ID de reserva no válido');
-            return;
-        }
-
-        if (!confirm('¿Estás seguro de cancelar esta reserva? Esta acción no se puede deshacer.')) return;
-
-        const formData = new FormData();
-        formData.append('id', idReserva);
-
-        fetch('/app/controllers/ReservaController.php?action=cancelar', {
-            method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
-            body: formData
-        })
-        .then(async response => {
-            if (!response.ok) {
-                const text = await response.text();
-                console.error('Error response:', text);
-                throw new Error('Error del servidor');
-            }
-            return response.json();
-        })
-        .then(result => {
-            if (result.status === 'ok') {
-                showToast('success', 'Reserva cancelada correctamente');
-                cargarReservasPorFecha(); // Recargar tabla
-            } else if (result.message === 'already_cancelled') {
-                showToast('error', 'La reserva ya fue cancelada anteriormente');
-            } else if (result.message === 'reservation_not_found') {
-                showToast('error', 'La reserva no existe');
-            } else {
-                showToast('error', result.detail || result.message || 'Error al cancelar la reserva');
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            showToast('error', 'Error al procesar la solicitud');
-        });
+    const btn = e.target.closest('.btn-cancelar-reserva');
+    if (!btn) return;
+    
+    const idReserva = btn.getAttribute('data-id');
+    
+    if (!idReserva) {
+        showToast('error', 'ID de reserva no válido');
+        return;
     }
+
+    if (!confirm('¿Estás seguro de cancelar esta reserva? Esta acción no se puede deshacer.')) return;
+
+    const formData = new FormData();
+    formData.append('id', idReserva);
+
+    fetch('/app/controllers/ReservaController.php?action=cancelar', {
+        method: 'POST',
+        headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        body: formData
+    })
+    .then(async response => {
+        if (!response.ok) {
+            const text = await response.text();
+            console.error('Error response:', text);
+            throw new Error('Error del servidor');
+        }
+        return response.json();
+    })
+    .then(result => {
+        if (result.status === 'ok') {
+            showToast('success', 'Reserva cancelada correctamente');
+            cargarReservasPorFecha(); // Recargar tabla
+        } else if (result.message === 'already_cancelled') {
+            showToast('error', 'La reserva ya fue cancelada anteriormente');
+        } else if (result.message === 'reservation_not_found') {
+            showToast('error', 'La reserva no existe');
+        } else {
+            showToast('error', result.detail || result.message || 'Error al cancelar la reserva');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Error al procesar la solicitud');
+    });
 });

@@ -1,32 +1,7 @@
- /*
- * BtnEditarJs.js
- * 
- * Abre modales de edición cargando datos existentes del servidor.
- * 
- * Funcionalidad:
- * - Detecta clicks en botones .btn-editar
- * - Obtiene el ID y tipo de controlador del elemento
- * - Fetcha datos actuales desde {Controller}Controller.php?action=obtener
- * - Carga datos en el modal correspondiente (Producto, Promoción o Evento)
- * - Para imagen: siempre limpia el campo (es OPCIONAL, no se pre-carga imagen anterior)
- * 
- * Nota sobre imágenes:
- * - El campo #imagen se limpia siempre (value = '')
- * - Permite al usuario OPCIONALMENTE subir nueva imagen
- * - Si NO sube imagen: mantiene el archivo existente en la carpeta (controlador lo maneja)
- * - Si sube imagen: reemplaza la anterior
- */
-
-/**
- * Función global para abrir modales de edición
- * Se usa desde los archivos de filtrado cuando se regeneran las tablas dinámicamente
- */
 function abrirEditar(id, controller) {
     if (!id || !controller) return;
-
     const data = new FormData();
     data.append("id", id);
-
     fetch(`/app/controllers/${controller}Controller.php?action=obtener`, {
         method: "POST",
         headers: { 'X-Requested-With': 'XMLHttpRequest' },
@@ -51,21 +26,35 @@ function abrirEditar(id, controller) {
             modal.classList.remove("d-none");
             modal.querySelector("#id").value = p.id_promocion;
             modal.querySelector("#nombre").value = p.nombre;
-            modal.querySelector("#descripcion").value = p.descripcion;
+            const descripcionTextarea = modal.querySelector("#descripcion");
+            if (descripcionTextarea) {
+                descripcionTextarea.value = p.descripcion || '';
+                descripcionTextarea.style.height = 'auto';
+                descripcionTextarea.style.height = descripcionTextarea.scrollHeight + 'px';
+            }
             modal.querySelector("#fechaInicio").value = p.fecha_inicio;
             modal.querySelector("#fechaFin").value = p.fecha_fin;
             const estadoSelect = modal.querySelector("#estado");
             if (estadoSelect) estadoSelect.value = p.estado || '';
-            
-            // Pre-seleccionar productos asociados
             const selectProductos = modal.querySelector("#productos");
-            if (selectProductos && p.productos && Array.isArray(p.productos)) {
+            const idsSeleccionados = Array.isArray(p.productos) ? p.productos.map(String) : [];
+            const aplicarPreseleccion = () => {
+                if (!selectProductos) return;
+                const setIds = new Set(idsSeleccionados);
                 Array.from(selectProductos.options).forEach(option => {
-                    option.selected = p.productos.includes(option.value);
+                    option.selected = setIds.has(String(option.value));
                 });
+            };
+            if (selectProductos) {
+                if (selectProductos.options.length === 0 && typeof cargarProductosEnSelect === 'function') {
+                    Promise.resolve(cargarProductosEnSelect()).then(() => {
+                        aplicarPreseleccion();
+                    }).catch(() => {
+                    });
+                } else {
+                    aplicarPreseleccion();
+                }
             }
-            
-            // Limpiar campo de imagen (es opcional, no cargar imagen anterior)
             const imagenInput = modal.querySelector("#imagen");
             if (imagenInput) imagenInput.value = '';
         } else if (controller === 'Evento') {
@@ -75,11 +64,21 @@ function abrirEditar(id, controller) {
             modal.classList.remove("d-none");
             modal.querySelector("#id").value = p.id_evento;
             modal.querySelector("#nombre").value = p.nombre;
-            modal.querySelector("#descripcion").value = p.descripcion;
+            const descripcionTextarea = modal.querySelector("#descripcion");
+            if (descripcionTextarea) {
+                descripcionTextarea.value = p.descripcion || '';
+                descripcionTextarea.style.height = 'auto';
+                descripcionTextarea.style.height = descripcionTextarea.scrollHeight + 'px';
+            }
             modal.querySelector("#fecha").value = p.fecha;
             modal.querySelector("#horaInicio").value = p.hora_inicio;
             modal.querySelector("#horaFin").value = p.hora_fin;
-            // Limpiar campo de imagen (es opcional, no cargar imagen anterior)
+            const imagenInfo = modal.querySelector("#imagen-actual-info");
+            if (imagenInfo && p.tiene_imagen) {
+                imagenInfo.classList.remove('d-none');
+            } else if (imagenInfo) {
+                imagenInfo.classList.add('d-none');
+            }
             const imagenInput = modal.querySelector("#imagen");
             if (imagenInput) imagenInput.value = '';
         } else if (controller === 'Producto') {
@@ -99,9 +98,7 @@ function abrirEditar(id, controller) {
         showToast('error','No se pudo cargar el registro: ' + err.message); 
     });
 }
-
 document.addEventListener('DOMContentLoaded', function() {
-    // Handlers para abrir modales de edición (btn-editar)
     document.querySelectorAll(".btn-editar").forEach(btn => {
         btn.onclick = () => {
             const id = btn.dataset.id;

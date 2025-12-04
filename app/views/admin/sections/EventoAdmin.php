@@ -68,6 +68,7 @@
                     <th>Fecha</th>
                     <th>Hora inicio</th>
                     <th>Hora fin</th>
+                    <th class="text-center">Imagen</th>
                     <th class="text-center">Acciones</th>
                 </tr>
             </thead>
@@ -82,6 +83,30 @@
                             <td><?= htmlspecialchars($ev['hora_inicio']) ?></td>
                             <td><?= htmlspecialchars($ev['hora_fin']) ?></td>
                             <td class="text-center">
+                                <?php
+                                $id = $ev['id_evento'];
+                                $imagenEncontrada = null;
+                                $dirImagenes = __DIR__ . '/../../../public/images/evento/';
+                                foreach (['jpg', 'png'] as $ext) {
+                                    if (file_exists($dirImagenes . $id . '.' . $ext)) {
+                                        $imagenEncontrada = $id . '.' . $ext;
+                                        break;
+                                    }
+                                }
+                                ?>
+                                <?php if ($imagenEncontrada): ?>
+                                    <img src="/public/images/evento/<?= $imagenEncontrada ?>" 
+                                         alt="<?= htmlspecialchars($ev['nombre']) ?>" 
+                                         class="img-thumbnail" 
+                                         style="width: 60px; height: 60px; object-fit: cover;">
+                                <?php else: ?>
+                                    <div class="d-flex align-items-center justify-content-center" 
+                                         style="width: 60px; height: 60px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 0.25rem;">
+                                        <small class="text-muted" style="font-size: 0.7rem; text-align: center;">Sin<br>imagen</small>
+                                    </div>
+                                <?php endif; ?>
+                            </td>
+                            <td class="text-center">
                                 <div class="d-flex gap-1 justify-content-center flex-wrap">
                                     <button class="btn btn-editar" data-id="<?= $ev['id_evento'] ?>" data-controller="Evento">
                                         <i class="bi bi-pencil-square"></i>
@@ -94,7 +119,7 @@
                         </tr>
                     <?php endforeach; ?>
                 <?php else: ?>
-                    <tr><td colspan="6" class="text-center">No hay eventos</td></tr>
+                    <tr><td colspan="7" class="text-center">No hay eventos</td></tr>
                 <?php endif; ?>
             </tbody>
         </table>

@@ -6,24 +6,18 @@
                 <div class="mb-3">
                     <label class="form-label">Fecha</label>
                     <input type="date" id="disp-fecha" name="fecha" class="form-control" min="<?php echo date('Y-m-d'); ?>" required>
-                    <small class="form-text text-muted">Solo se permiten fechas desde hoy en adelante</small>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Cantidad de mesas</label>
                     <input type="number" id="disp-cantidad" name="cantidad" class="form-control" min="1" max="100" required>
-                    <small class="form-text text-muted">Las primeras N mesas del catálogo estarán disponibles</small>
                 </div>
             </div>
             <div class="alert alert-info" role="alert">
                 <i class="bi bi-info-circle"></i> Al crear la disponibilidad, se activarán automáticamente las primeras mesas del catálogo hasta la cantidad indicada.
             </div>
-            <div class="d-flex flex-wrap gap-2 mt-3">
-                <button type="submit" id="btn-guardar-disponibilidad" class="btn btn-sm">
-                    <i class="bi bi-save"></i> Guardar
-                </button>
-                <button type="button" id="btn-cancelar-disponibilidad" class="btn btn-sm">
-                    <i class="bi bi-x-circle"></i> Cancelar
-                </button>
+            <div class="d-flex gap-2 mt-3">
+                <button type="submit" id="btn-guardar-disponibilidad" class="btn btn-sm">Guardar</button>
+                <button type="button" id="btn-cancelar-disponibilidad" class="btn btn-sm">Cancelar</button>
             </div>
         </form>
     </div>
