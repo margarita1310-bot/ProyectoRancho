@@ -1,23 +1,52 @@
+/**
+ * PromocionAdminJS
+ * Script para gestionar promociones (crear, editar, eliminar, filtrar)
+ * Incluye asociación de productos, renderización dinámica y validación de formularios
+ */
+
+// Variable global para almacenar todas las promociones cargadas
 let todasLasPromociones = [];
+
+/**
+ * Evento: Cuando el DOM está completamente cargado
+ * Inicializa promociones y configura event listeners
+ */
 document.addEventListener('DOMContentLoaded', () => {
+    // Cargar promociones desde tabla HTML
     inicializarPromocionesDesdeTabla();
+
+    // Aplicar filtro por defecto
     filtrarPromociones('todas');
+
+    // Cargar productos en selectores
     cargarProductosEnSelect();
+
+    // Configurar botones de filtro
     const btnsFiltroPromocion = document.querySelectorAll('[data-filtro-promocion]');
     btnsFiltroPromocion.forEach(btn => {
         btn.addEventListener('click', () => {
+            // Remover clase activa de todos los botones
             btnsFiltroPromocion.forEach(b => b.classList.remove('filter-btn-active'));
+
+            // Agregar clase activa al botón clickeado
             btn.classList.add('filter-btn-active');
+
+            // Obtener y aplicar filtro
             const filtro = btn.getAttribute('data-filtro-promocion');
             filtrarPromociones(filtro);
         });
     });
+
+    // Configurar textareas con auto-resize
     const textareas = document.querySelectorAll('#modal-crear-promocion #descripcion, #modal-editar-promocion #descripcion');
     textareas.forEach(textarea => {
-        textarea.addEventListener('input', function() {
+        // Event listener para ajustar altura al escribir
+        textarea.addEventListener('input', function () {
             this.style.height = 'auto';
             this.style.height = this.scrollHeight + 'px';
         });
+
+        // Observer para ajustar altura cuando se abre modal
         const modal = textarea.closest('.modal-overlay');
         if (modal) {
             const observer = new MutationObserver(() => {
