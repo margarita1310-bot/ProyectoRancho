@@ -1,5 +1,8 @@
 <?php
 
+// Cargar configuración central
+require_once dirname(__DIR__) . '/../config/config.php';
+
 /**
  * Controlador de Vista de Usuario
  * Gestiona la renderización de vistas para usuarios públicos
@@ -14,7 +17,7 @@ class UserViewController
      */
     public function index()
     {
-        require_once __DIR__ . '/../views/user/DashboardUser.php';
+        require_once VIEWS_ROOT . '/user/DashboardUser.php';
     }
 }
 

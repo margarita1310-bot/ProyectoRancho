@@ -1,0 +1,54 @@
+# Configuración de .htaccess para Infinity Free y hosting compartido
+# Habilita reescritura de URLs y configura el entorno
+
+# Habilitar el motor de reescritura de URL
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    
+    # Establecer la base del rewrite
+    RewriteBase /
+    
+    # Permitir acceso a archivos y directorios reales
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Redirigir todas las solicitudes a través de index.php si no son recursos estáticos
+    RewriteRule ^(.*)$ index.php [QSA,L]
+</IfModule>
+
+# Configuración de seguridad
+<FilesMatch "\.(env|json|lock)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Habilitar compresión GZIP para mejorar rendimiento
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Headers de seguridad y caché
+<IfModule mod_headers.c>
+    # Prevenir clic hijacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Habilitar protección XSS
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Prevenir MIME type sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Content Security Policy
+    Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline';"
+</IfModule>
+
+# Soporte para UTF-8
+AddType text/html; charset=utf-8 .html .php
+
+# Límite de tiempo de ejecución para PHP
+<IfModule mod_php.c>
+    php_value max_execution_time 300
+    php_value post_max_size 50M
+    php_value upload_max_filesize 50M
+    php_value memory_limit 256M
+</IfModule>

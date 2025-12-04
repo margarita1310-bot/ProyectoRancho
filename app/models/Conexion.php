@@ -3,6 +3,7 @@
 /**
  * Clase de Conexión a Base de Datos
  * Gestiona la conexión singleton a la base de datos MySQL usando PDO
+ * Compatible con diferentes entornos: localhost, Infinity Free, etc.
  */
 class Conexion
 {
@@ -24,17 +25,28 @@ class Conexion
     {
         if (self::$conexion === null) {
             try {
-                // Configuración de la base de datos
-                $host = 'localhost';
-                $usuario = 'root';
-                $contraseña = 'rancho';
-                $base_de_datos = 'lajoya_gestion';
+                // Cargar configuración desde el archivo config.php
+                if (!defined('DB_HOST')) {
+                    require_once dirname(__DIR__) . '/../config/config.php';
+                }
 
-                // Crear conexión PDO con soporte UTF-8
+                // Usar las constantes de configuración
+                $host = DB_HOST;
+                $usuario = DB_USER;
+                $contraseña = DB_PASS;
+                $base_de_datos = DB_NAME;
+
+                // Crear conexión PDO con soporte UTF-8 y configuraciones para Infinity Free
+                $dsn = "mysql:host=$host;dbname=$base_de_datos;charset=utf8mb4";
                 self::$conexion = new PDO(
-                    "mysql:host=$host;dbname=$base_de_datos;charset=utf8",
+                    $dsn,
                     $usuario,
-                    $contraseña
+                    $contraseña,
+                    array(
+                        PDO::ATTR_PERSISTENT => false,
+                        PDO::ATTR_TIMEOUT => 5,
+                        PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES utf8mb4"
+                    )
                 );
 
                 // Configurar modo de error para excepciones

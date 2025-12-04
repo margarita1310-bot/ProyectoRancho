@@ -1,0 +1,37 @@
+# Variables de entorno
+.env
+.env.local
+.env.*.local
+
+# Archivos del IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Directorios del sistema
+node_modules/
+Thumbs.db
+
+# Archivos de log
+*.log
+logs/
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
+
+# Caché
+.cache/
+
+# Archivos de prueba generados
+tests/coverage/
+
+# Configuración local
+config/config.local.php
+
+# Dependencias de composer
+vendor/composer.lock

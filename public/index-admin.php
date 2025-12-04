@@ -5,6 +5,13 @@
  * Redirige al login del administrador
  */
 
-header("Location: /app/controllers/LoginController.php?action=login");
+// Cargar configuración
+require_once __DIR__ . '/../config/config.php';
+
+// Construir la ruta relativa correctamente
+$baseUrl = rtrim(BASE_URL, '/');
+$redirectUrl = $baseUrl . '/app/controllers/LoginController.php?action=login';
+
+header("Location: $redirectUrl");
 exit;
 ?>

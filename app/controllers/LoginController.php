@@ -1,6 +1,9 @@
 <?php
 
-require_once '../../app/models/Usuario.php';
+// Cargar configuración central
+require_once dirname(__DIR__) . '/../config/config.php';
+
+require_once MODELS_ROOT . '/Usuario.php';
 
 session_start();
 
@@ -18,7 +21,7 @@ class LoginController
      */
     public function login()
     {
-        include '../../app/views/login/login.php';
+        include VIEWS_ROOT . '/login/login.php';
     }
 
     /**
@@ -39,12 +42,13 @@ class LoginController
         if ($user) {
             // Credenciales válidas: crear sesión y redirigir
             $_SESSION['admin'] = $user;
-            header("Location: ../../app/controllers/AdminController.php?action=dashboard");
+            $redirect = BASE_URL . 'app/controllers/AdminController.php?action=dashboard';
+            header("Location: $redirect");
             exit;
         } else {
             // Credenciales inválidas: mostrar error
             $error = "Usuario o contraseña incorrectos.";
-            include '../../app/views/login/login.php';
+            include VIEWS_ROOT . '/login/login.php';
         }
     }
 
@@ -57,7 +61,8 @@ class LoginController
     public function logout()
     {
         session_destroy();
-        header("Location: ../../app/controllers/LoginController.php?action=login");
+        $redirect = BASE_URL . 'app/controllers/LoginController.php?action=login';
+        header("Location: $redirect");
         exit;
     }
 }

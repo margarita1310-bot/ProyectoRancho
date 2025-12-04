@@ -1,0 +1,137 @@
+{
+  "proyecto": "Sistema de Gestión Rancho La Joya",
+  "versión": "1.0",
+  "adaptado_para": "Infinity Free Hosting",
+  "fecha_adaptación": "2025-12-03",
+  "cambios_realizados": [
+    {
+      "id": 1,
+      "nombre": "Configuración centralizada",
+      "archivo": "config/config.php",
+      "descripción": "Archivo de configuración central que soporta variables de entorno y diferentes hosts",
+      "beneficio": "Permite cambiar credenciales sin editar múltiples archivos"
+    },
+    {
+      "id": 2,
+      "nombre": "Variables de entorno",
+      "archivo": ".env.example",
+      "descripción": "Plantilla para configuración de base de datos segura",
+      "beneficio": "Mantiene credenciales seguras fuera del repositorio"
+    },
+    {
+      "id": 3,
+      "nombre": "Actualización de Conexion.php",
+      "archivo": "app/models/Conexion.php",
+      "descripción": "Ahora usa config.php y soporta variables de entorno",
+      "beneficio": "Compatible con diferentes entornos (local, producción, Infinity Free)"
+    },
+    {
+      "id": 4,
+      "nombre": "Archivo .htaccess",
+      "archivo": ".htaccess",
+      "descripción": "Configuración para URL rewriting y seguridad",
+      "beneficio": "Permite usar URLs limpias y mejora seguridad del servidor"
+    },
+    {
+      "id": 5,
+      "nombre": "Índice principal",
+      "archivo": "index.php",
+      "descripción": "Punto de entrada principal con rutas dinámicas",
+      "beneficio": "Facilita la navegación y URL rewriting"
+    },
+    {
+      "id": 6,
+      "nombre": "Puntos de entrada públicos",
+      "archivo": "public/index-admin.php, public/index-user.php",
+      "descripción": "Usan BASE_URL dinámico para redirecciones",
+      "beneficio": "Funciona con cualquier estructura de subdirectorio"
+    },
+    {
+      "id": 7,
+      "nombre": "Controladores actualizados",
+      "archivo": "app/controllers/LoginController.php, UserViewController.php",
+      "descripción": "Usan rutas absolutas desde config.php",
+      "beneficio": "Evita problemas con require_once con rutas relativas"
+    },
+    {
+      "id": 8,
+      "nombre": "Validador de configuración",
+      "archivo": "app/helpers/ConfigValidator.php",
+      "descripción": "Valida extensiones PHP, BD, .env, etc.",
+      "beneficio": "Ayuda a diagnosticar problemas en el servidor"
+    },
+    {
+      "id": 9,
+      "nombre": "Página de diagnóstico",
+      "archivo": "diagnostic.php",
+      "descripción": "Interfaz visual para validar la configuración",
+      "beneficio": "Fácil identificación de problemas antes de iniciar"
+    },
+    {
+      "id": 10,
+      "nombre": "Documentación de deployment",
+      "archivo": "DEPLOYMENT_INFINITYFREE.md",
+      "descripción": "Guía paso a paso para desplegar en Infinity Free",
+      "beneficio": "Facilita el proceso de subida y configuración"
+    },
+    {
+      "id": 11,
+      "nombre": "Git ignore",
+      "archivo": ".gitignore",
+      "descripción": "Excluye archivos sensitivos del control de versiones",
+      "beneficio": "Protege credenciales y datos sensibles"
+    }
+  ],
+  "requisitos_servidor": {
+    "php_version": "7.4+",
+    "mysql_version": "5.7+",
+    "extensiones_php": [
+      "pdo",
+      "pdo_mysql",
+      "json",
+      "session"
+    ],
+    "modulos_apache": [
+      "mod_rewrite"
+    ]
+  },
+  "pasos_deployment": [
+    "1. Crear .env basado en .env.example",
+    "2. Copiar todos los archivos al hosting (incluir ocultos)",
+    "3. Crear base de datos en Infinity Free",
+    "4. Importar estructura SQL",
+    "5. Acceder a diagnostic.php para validar configuración",
+    "6. Eliminar diagnostic.php en producción",
+    "7. Probar login y funcionalidades principales"
+  ],
+  "urls_importantes": {
+    "diagnostico": "https://tudominio.com/diagnostic.php",
+    "login_admin": "https://tudominio.com/app/controllers/LoginController.php?action=login",
+    "dashboard_usuario": "https://tudominio.com/app/controllers/UserViewController.php",
+    "indice_principal": "https://tudominio.com/"
+  },
+  "archivos_a_eliminar_en_produccion": [
+    "diagnostic.php",
+    ".env.example",
+    "DEPLOYMENT_INFINITYFREE.md (opcional)"
+  ],
+  "archivos_a_proteger": [
+    ".env (permisos 600)",
+    "config/config.php",
+    "app/models/Conexion.php"
+  ],
+  "consideraciones_importantes": [
+    "Infinity Free usa subrectorios para cada dominio/app",
+    "Las rutas deben ser relativas a BASE_URL",
+    "Los archivos ocultos (que comienzan con .) deben ser subidos explícitamente",
+    "mod_rewrite debe estar habilitado para que .htaccess funcione",
+    "La compresión GZIP mejora el rendimiento significativamente",
+    "Los timeouts deben ser considerados en operaciones largas",
+    "Usar utf8mb4 en lugar de utf8 para mejor compatibilidad"
+  ],
+  "soporte": {
+    "infinityfree_wiki": "https://wiki.infinityfree.net/",
+    "infinityfree_panel": "https://app.infinityfree.net/",
+    "infinityfree_email": "support@infinityfree.net"
+  }
+}
